@@ -19,7 +19,7 @@ class OperatorModel(BaseModel):
     email: str
     representative: str
     representative_position: str
-    sales_region: int
+    sales_region: int | None = None
     
     class Config:
         from_attributes = True
