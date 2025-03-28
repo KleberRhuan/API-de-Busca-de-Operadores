@@ -1,7 +1,7 @@
-from src.application.exception.business_exception import BusinessException
+from src.application.exception.violation_exception import ViolationException
+from src.presentation.exception.api_error import Violation
 
-class InvalidSortParameterException(BusinessException):
-    def __init__(self, order_by: str, allowed: frozenset[str]):
-        self.order_by = order_by
-        self.allowed = allowed
-        super().__init__(f"Propriedade '{order_by}' é inválida. Valores permitidos: {', '.join(allowed)}")
+class InvalidSortParameterException(ViolationException):
+    def __init__(self, field: str, message: str):
+        super().__init__(field, message)
+        
