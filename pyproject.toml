@@ -13,11 +13,13 @@ dependencies = [
     "sqlalchemy (>=2.0.40,<3.0.0)",
     "redis (>=5.2.1,<6.0.0)",
     "limits (>=4.4.1,<5.0.0)",
-    "pydantic (>=2.11.0,<3.0.0)"
+    "pydantic (>=2.11.0,<3.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)"
 ]
 
 [tool.poetry]
 package-mode = false
+packages = [{include = "src"}]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"

@@ -1,9 +1,13 @@
 import os
+import sys
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock, patch
+
+# Adicionar o diretório raiz ao PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.presentation.main import create_application
-from src.infra.database import get_redis_connection
 from limits.storage import MemoryStorage
 
 # Configuração de ambiente para testes
