@@ -240,41 +240,42 @@ A API implementa cache usando Redis para melhorar a performance, com TTL (time-t
 
 ```
 intuitive-care/
-├── application/
-│   ├── dto/
-│   │   └── operator_model.py
-│   ├── exception/
-│   │   ├── business_exception.py
-│   │   ├── invalid_order_parameter_exception.py
-│   │   └── invalid_search_parameter_exception.py
-│   └── services/
-│       └── operator_service.py
-├── domain/
-│   └── repository/
-│       └── operator_repository.py
-├── infra/
-│   ├── db_manager.py
-│   ├── config.py
-│   └── swagger_config.py
-├── presentation/
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── dependencies.py
-│   │   └── routes.py
-│   ├── config/
-│   │   ├── __init__.py
-│   │   ├── app_config.py
-│   │   ├── limiter_config.py
-│   │   └── middleware.py
-│   ├── exception/
-│   │   ├── api_error.py
-│   │   ├── api_error_type.py
-│   │   └── exception_handlers.py
-│   ├── model/
-│   │   ├── operator_request_params.py
-│   │   ├── pageable_meta_model.py
-│   │   └── pageable_response.py
-│   └── main.py
+├── src/
+│   ├── application/
+│   │   ├── dto/
+│   │   │   └── operator_model.py
+│   │   ├── exception/
+│   │   │   ├── business_exception.py
+│   │   │   ├── invalid_order_parameter_exception.py
+│   │   │   └── invalid_search_parameter_exception.py
+│   │   └── services/
+│   │       └── operator_service.py
+│   ├── domain/
+│   │   └── repository/
+│   │       └── operator_repository.py
+│   ├── infra/
+│   │   ├── db_manager.py
+│   │   ├── config.py
+│   │   └── swagger_config.py
+│   └── presentation/
+│       ├── api/
+│       │   ├── __init__.py
+│       │   ├── dependencies.py
+│       │   └── routes.py
+│       ├── config/
+│       │   ├── __init__.py
+│       │   ├── app_config.py
+│       │   ├── limiter_config.py
+│       │   └── middleware.py
+│       ├── exception/
+│       │   ├── api_error.py
+│       │   ├── api_error_type.py
+│       │   └── exception_handlers.py
+│       ├── model/
+│       │   ├── operator_request_params.py
+│       │   ├── pageable_meta_model.py
+│       │   └── pageable_response.py
+│       └── main.py
 ├── tests/
 │   ├── test_functional.py
 │   ├── test_integration.py
