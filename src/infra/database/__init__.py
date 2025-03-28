@@ -12,42 +12,42 @@ from aiocache.serializers import JsonSerializer
 import redis
 
 # Configuração do banco de dados
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_NAME = os.getenv("DB_NAME", "my_database")
-DB_USER = os.getenv("DB_USER", "my_user")
-DB_PASS = os.getenv("DB_PASS", "my_password")
-DB_PORT = os.getenv("DB_PORT", "5432")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/operators_db")
 
-DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-
-# Inicialização do SQLAlchemy sem mod no pool de conexoes
-engine = create_engine(DATABASE_URL)
+# Inicialização do SQLAlchemy
+engine = create_engine(
+    DATABASE_URL, 
+    pool_pre_ping=True,
+    pool_recycle=3600,  
+    pool_size=10,        
+    max_overflow=20  
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Configuração do Redis
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_PASS = os.getenv("REDIS_PASS", None)
-REDIS_URL = f"redis://{':'+REDIS_PASS+'@' if REDIS_PASS else ''}{REDIS_HOST}:{REDIS_PORT}/0"
-
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 def get_redis_connection():
     try:
         return redis.from_url(REDIS_URL)
     except Exception as e:
-        print(f"Erro ao conectar ao Redis: {e}")
-        return None
+        raise ValueError(f"Erro ao conectar ao Redis: {e}")
 
 # Inicialização do cache
-cache = Cache(
-    Cache.REDIS,
-    endpoint=REDIS_HOST,
-    port=REDIS_PORT,
-    password=REDIS_PASS,
-    serializer=JsonSerializer()
-)
+redis_instance = get_redis_connection()
+if redis_instance:
+    cache = Cache(
+        Cache.REDIS,
+        endpoint=redis_instance,
+        serializer=JsonSerializer()
+    )
+else:
+    # Fallback para cache em memória se o Redis não estiver disponível
+    cache = Cache(
+        Cache.MEMORY,
+        serializer=JsonSerializer()
+    )
 
-# Função para injeção de dependência
 def get_db():
     db = SessionLocal()
     try:
@@ -58,5 +58,4 @@ def get_db():
 def get_cache():
     return cache
 
-# Exportar as funções/objetos principais
 __all__ = ['engine', 'SessionLocal', 'get_db', 'get_cache', 'cache', 'get_redis_connection', 'REDIS_URL']

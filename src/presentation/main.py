@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import os
 from src.infra.config import setup_application
 from src.presentation.api.routes import get_router
 
@@ -18,4 +19,8 @@ application = create_application()
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(application, host="0.0.0.0", port=8080, reload=True)
+    
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 8080))
+    
+    uvicorn.run(application, host=host, port=port, reload=True)
