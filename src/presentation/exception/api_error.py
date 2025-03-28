@@ -2,19 +2,10 @@ from datetime import datetime, UTC
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 
-from infra.config import Config
-
-
 class Violation(BaseModel):
     name: str
     message: str
 
-"""
-* @Author: Kleber Rhuan
-* @Date: 2025-27-03
-* @Description: Representa um corpo de resposta de erro padronizado, conforme o formato Problem Details definido na RFC 7807.
-* Esse registro fornece informações de erro consistentes e detalhadas na resposta da API.
-"""
 class ApiError(BaseModel):
     status: int
     type: str
@@ -34,20 +25,10 @@ class ApiError(BaseModel):
     def serialize_timestamp(self, timestamp: datetime, _info):
         return timestamp.isoformat()
 
-
     @model_validator(mode="before")
     def add_url_to_type(cls, values):
-        base_url = Config.APP_URL
+        from src.infra.config.config import get_app_url
+        base_url = get_app_url()
         if "type" in values and values["type"]:
             values["type"] = f"{base_url}{values['type']}"
         return values
-
-    @field_validator('query')
-    def validate_query_length(cls, value):
-        if value and len(value) < 3:
-            from application.exception.invalid_search_parameter_exception import InvalidSearchParameterException
-            raise InvalidSearchParameterException(
-                request_parameter="query",
-                allowed={"Mínimo de 3 caracteres"}
-            )
-        return value

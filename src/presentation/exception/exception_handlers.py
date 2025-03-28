@@ -5,10 +5,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from application.exception.business_exception import BusinessException
-from presentation.exception.api_error import Violation, ApiError
-from slowapi.errors import RateLimitExceeded
-from presentation.exception.api_error_type import ApiErrorType
+from src.presentation.exception.error_message_translator import ErrorMessageTranslator, get_translator
+from src.application.exception.business_exception import BusinessException
+from src.application.exception.rate_limit_exception import RateLimitExceededException
+from src.presentation.exception.api_error import Violation, ApiError
+from src.presentation.exception.api_error_type import ApiErrorType
 
 def create_api_error_response(
         error_type: ApiErrorType,
@@ -39,22 +40,6 @@ def create_api_error_response(
 def register_exception_handlers(app):
 
     logger = logging.getLogger("uvicorn.error")
-    
-    @app.exception_handler(RateLimitExceeded)
-    async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-        logger.info(f"RateLimitExceeded: {exc}")
-        limit = getattr(exc, "limit", "")
-        remaining = getattr(exc, "headers", {}).get("X-RateLimit-Remaining", "0")
-        reset = getattr(exc, "headers", {}).get("X-RateLimit-Reset", "")
-        
-        detail = f"Limite de requisições excedido. Limite: {limit}, Restantes: {remaining}, Reinicia em: {reset}s."
-        
-        return create_api_error_response(
-            error_type=ApiErrorType.RATE_LIMIT_EXCEEDED,
-            status_code=429,
-            detail=detail,
-            user_message="Você excedeu o limite de requisições permitido. Por favor, aguarde um momento antes de tentar novamente."
-        )
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -81,13 +66,13 @@ def register_exception_handlers(app):
         """
         Trata erros de validação da requisição com informações detalhadas
         """
-        violations = [
-            Violation(
-                name=".".join(str(loc) for loc in error["loc"]),
-                message=error["msg"]
-            )
-            for error in exc.errors()
-        ]
+        translator = get_translator()
+        violations = []
+        
+        for error in exc.errors():
+            field_path = ".".join(str(loc) for loc in error["loc"])
+            translated_message = translator.translate(error)
+            violations.append(Violation(name=field_path, message=translated_message))
 
         return create_api_error_response(
             error_type=ApiErrorType.MESSAGE_NOT_READABLE,
@@ -112,7 +97,7 @@ def register_exception_handlers(app):
         return create_api_error_response(
             error_type=ApiErrorType.SYSTEM_ERROR,
             status_code=500,
-            detail=f"Erro interno: {str(exc)}",
+            detail="Erro interno.",
             user_message="Ocorreu um erro interno no servidor, tente novamente e se o problema persistir, entre em contato com o administrador."
         )
 
@@ -125,3 +110,22 @@ def register_exception_handlers(app):
     @app.exception_handler(SQLAlchemyError)
     async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
         return await generic_exception_handler(request, exc)
+    
+    @app.exception_handler(RateLimitExceededException)
+    async def rate_limit_exception_handler(request: Request, exc: RateLimitExceededException):
+        
+        # Criar resposta com cabeçalhos de rate limit
+        response = create_api_error_response(
+            error_type=ApiErrorType.RATE_LIMIT_EXCEEDED,
+            status_code=429,
+            detail=str(exc),
+            user_message="Você excedeu o limite de requisições. Por favor, aguarde alguns instantes antes de tentar novamente."
+        )
+        
+        # Adicionar cabeçalhos específicos para rate limiting
+        response.headers["Retry-After"] = str(exc.reset_in)
+        response.headers["X-RateLimit-Limit"] = str(exc.limit)
+        response.headers["X-RateLimit-Remaining"] = "0"
+        response.headers["X-RateLimit-Reset"] = str(exc.reset_in)
+        
+        return response
