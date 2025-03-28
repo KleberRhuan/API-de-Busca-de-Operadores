@@ -1,16 +1,14 @@
 import logging
 from typing import List, Optional
-
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-
 from application.exception.business_exception import BusinessException
 from presentation.exception.api_error import Violation, ApiError
+from slowapi.errors import RateLimitExceeded
 from presentation.exception.api_error_type import ApiErrorType
-
 
 def create_api_error_response(
         error_type: ApiErrorType,
@@ -41,6 +39,22 @@ def create_api_error_response(
 def register_exception_handlers(app):
 
     logger = logging.getLogger("uvicorn.error")
+    
+    @app.exception_handler(RateLimitExceeded)
+    async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+        logger.info(f"RateLimitExceeded: {exc}")
+        limit = getattr(exc, "limit", "")
+        remaining = getattr(exc, "headers", {}).get("X-RateLimit-Remaining", "0")
+        reset = getattr(exc, "headers", {}).get("X-RateLimit-Reset", "")
+        
+        detail = f"Limite de requisições excedido. Limite: {limit}, Restantes: {remaining}, Reinicia em: {reset}s."
+        
+        return create_api_error_response(
+            error_type=ApiErrorType.RATE_LIMIT_EXCEEDED,
+            status_code=429,
+            detail=detail,
+            user_message="Você excedeu o limite de requisições permitido. Por favor, aguarde um momento antes de tentar novamente."
+        )
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException):

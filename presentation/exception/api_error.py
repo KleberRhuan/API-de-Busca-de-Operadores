@@ -41,3 +41,13 @@ class ApiError(BaseModel):
         if "type" in values and values["type"]:
             values["type"] = f"{base_url}{values['type']}"
         return values
+
+    @field_validator('query')
+    def validate_query_length(cls, value):
+        if value and len(value) < 3:
+            from application.exception.invalid_search_parameter_exception import InvalidSearchParameterException
+            raise InvalidSearchParameterException(
+                request_parameter="query",
+                allowed={"Mínimo de 3 caracteres"}
+            )
+        return value

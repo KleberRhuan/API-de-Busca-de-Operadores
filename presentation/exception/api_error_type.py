@@ -6,7 +6,8 @@ class ApiErrorType(str, Enum):
     RESOURCE_NOT_FOUND = ("/recurso-nao-encontrado", "Recurso Não Encontrado")
     INVALID_PARAMETER = ("/parametro-invalido", "Parâmetro Inválido")
     SYSTEM_ERROR = ("/erro-interno", "Erro Interno do Sistema")
-
+    RATE_LIMIT_EXCEEDED = ("/limite-de-requisicoes-excedido", "Limite de Requisições Excedido")
+    
     def __new__(cls, uri, title):
         obj = str.__new__(cls, uri)
         obj._value_ = uri
