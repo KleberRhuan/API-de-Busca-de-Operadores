@@ -16,8 +16,8 @@ def get_allowed_order_columns(model) -> frozenset[str]:
 class OperatorSearchService:
     _ALLOWED_ORDER_COLUMNS: FrozenSet[str] = get_allowed_order_columns(Operator)
 
-    def __init__(self, operator_repository: OperatorRepository):
-        self._operator_repository = operator_repository
+    def __init__(self, repository: OperatorRepository):
+        self.repository = repository
 
     @classmethod
     @lru_cache(maxsize=1)
@@ -25,14 +25,13 @@ class OperatorSearchService:
         return cls._ALLOWED_ORDER_COLUMNS
 
     def find_all(self, criteria: OperatorRequestParams) -> 'PageableResponse':
-        operators, last_page = self._operator_repository.search_operators(criteria)
+        operators, last_page = self.repository.search_operators(criteria)
         response = PageableResponse.create(operators, criteria, last_page)
         return response
 
     """
     Tempo de TTL mais longo devido ao fato de os dados não se alterarem recorrentemente.
     """
-        # New async method with caching
     @cached(
         ttl=3600,
         cache=Cache.REDIS,

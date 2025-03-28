@@ -1,12 +1,12 @@
 from fastapi import FastAPI
-from typing import Dict, Any, List, Type
-from presentation.model.pageable_response import PageableResponse
-from presentation.model.operator_request_params import OperatorRequestParams
-from presentation.model.pageable_meta_model import PageableMetaData, SortData
-from presentation.exception.api_error import ApiError, Violation
-from presentation.exception.api_error_type import ApiErrorType
-from application.dto.operator_model import OperatorModel
-from pydantic import create_model
+from typing import Dict, Any, List
+from src.presentation.model.pageable_response import PageableResponse
+from src.presentation.model.operator_request_params import OperatorRequestParams
+from src.presentation.model.pageable_meta_model import PageableMetaData, SortData
+from src.presentation.exception.api_error import ApiError, Violation
+from src.presentation.exception.api_error_type import ApiErrorType
+from src.application.dto.operator_model import OperatorModel
+
 
 def get_swagger_title() -> str:
     return "API de Busca de Operadores"

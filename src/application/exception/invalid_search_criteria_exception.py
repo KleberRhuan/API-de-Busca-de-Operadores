@@ -1,7 +1,6 @@
-from application.exception.business_exception import BusinessException
+from src.application.exception.business_exception import BusinessException
 
-
-class InvalidSearchParameterException(BusinessException):
+class InvalidSearchCriteriaException(BusinessException):
     def __init__(self, request_parameter: str, allowed: set):
         self.request_parameter = request_parameter
         self.allowed = allowed

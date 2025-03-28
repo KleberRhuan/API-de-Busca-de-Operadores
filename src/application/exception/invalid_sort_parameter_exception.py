@@ -1,4 +1,4 @@
-from application.exception.business_exception import BusinessException
+from src.application.exception.business_exception import BusinessException
 
 class InvalidOrderParameterException(BusinessException):
     def __init__(self, order_by: str, allowed: frozenset[str]):

@@ -3,11 +3,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
-from infra.swagger_config import configure_swagger
-import infra.config as config
-from presentation.exception.exception_handlers import register_exception_handlers
-from infra.middleware import setup_cors
-from infra.limiter_config import limiter
+from src.infra.swagger_config import configure_swagger
+from src.presentation.exception.exception_handlers import register_exception_handlers
+from src.infra.middleware import setup_cors
+from src.infra.limiter_config import limiter
 
 def load_env():
     if os.getenv("ENV", "dev") != "prod":
