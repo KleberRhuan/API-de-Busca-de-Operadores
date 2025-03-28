@@ -64,7 +64,7 @@ O projeto segue os princípios da Arquitetura Limpa (Clean Architecture) com uma
 
 1. Clone o repositório:
 ```bash
-git clone TODO ->  Adicionar Repo
+git clone https://github.com/KleberRhuan/API-de-Busca-de-Operadores
 cd intuitive-care
 ```
 
