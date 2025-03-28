@@ -45,6 +45,20 @@ cp .env.example .env
 poetry run alembic upgrade head
 ```
 
+## 🐳 Utilizando Docker
+
+Para executar o projeto usando Docker:
+
+```bash
+# Desenvolvimento
+docker-compose -f docker-compose.dev.yml up -d
+
+# Produção
+docker-compose up -d
+```
+
+Consulte o arquivo [docs/docker-instructions.md](docs/docker-instructions.md) para instruções detalhadas sobre Docker.
+
 ## 🏗️ Estrutura do Projeto
 
 ```
@@ -184,11 +198,13 @@ Busca operadoras de saúde com filtros e paginação.
 - Configuração completa de CORS para acesso cross-origin
 - Suporte para preflight requests (OPTIONS)
 - Headers personalizáveis via variáveis de ambiente
+- Suporte a OPTIONS, mas as requisições precisam ter os headers `Origin` e `Access-Control-Request-Method` configurados corretamente
 
 ### Sistema de Cache
 - Cache implementado com Redis para queries frequentes
 - Centralização da configuração do Redis
 - Compartilhamento da conexão Redis entre cache e rate limiting
+- TTL configurável para diferentes tipos de consultas
 
 ## 🛠️ Desenvolvimento
 
@@ -220,6 +236,11 @@ poetry add --group dev nome-do-pacote
 3. Inicie o servidor com:
 ```bash
 poetry run uvicorn src.presentation.main:app --host 0.0.0.0 --port 8000
+```
+
+Ou utilize Docker:
+```bash
+docker-compose up -d
 ```
 
 ## 🤝 Contribuindo

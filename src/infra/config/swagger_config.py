@@ -37,6 +37,15 @@ def get_swagger_description() -> str:
     * Cache automático para melhorar performance
     * Rate limiting com headers compatíveis com RFC 6585
     
+    ## CORS e Requisições OPTIONS
+    
+    Esta API implementa CORS (Cross-Origin Resource Sharing) para permitir acesso de origens diferentes.
+    O FastAPI e Starlette implementam suporte a requisições OPTIONS, mas para que funcionem corretamente:
+    
+    * As requisições devem incluir os cabeçalhos `Origin` e `Access-Control-Request-Method`
+    * Apenas os métodos GET e OPTIONS são permitidos
+    * Para mais detalhes, consulte a documentação em `/docs/cors-configuration.md`
+    
     ## Acesso
     
     Esta API é aberta e não requer autenticação.
