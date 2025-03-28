@@ -8,6 +8,10 @@ import src.infra.config as config
 
 api_router = APIRouter(prefix="/api/v1")
 
+# Função para injeção de dependência do OperatorService
+def get_operator_service(db=Depends(get_db)):
+    return OperatorService(db)
+
 @api_router.get(
     "/operators", 
     response_model=SWAGGER_CONFIG["operators"]["response_model"],
@@ -19,15 +23,14 @@ api_router = APIRouter(prefix="/api/v1")
 )
 async def search_operators(
     params: OperatorRequestParams = Depends(),
-    db=Depends(get_db),
+    operator_service: OperatorService = Depends(get_operator_service),
 ):
-    operator_service = OperatorService(db)
     return await operator_service.find_all_cached(params)
 
 # Endpoint condicional para ambiente de desenvolvimento
 if config.get_current_env() == "dev":
     @api_router.get(
-        "/cache-test", 
+        "/cache-tests", 
         response_class=JSONResponse,
         tags=[SWAGGER_CONFIG["cache_test"]["tag"]],
         summary=SWAGGER_CONFIG["cache_test"]["summary"],

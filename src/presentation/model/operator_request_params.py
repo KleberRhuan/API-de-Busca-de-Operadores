@@ -1,7 +1,9 @@
 from typing import Optional, Literal
 from pydantic import BaseModel, Field, field_validator
-from src.application.exception.business_exception import BusinessException
 from src.application.exception.invalid_sort_parameter_exception import InvalidSortParameterException
+from src.application.exception.violation_exception import ViolationException
+from src.presentation.exception.api_error import Violation
+
 
 class OperatorRequestParams(BaseModel):
     query: Optional[str] = Field(
@@ -32,7 +34,10 @@ class OperatorRequestParams(BaseModel):
     @field_validator('query')
     def validate_query_length(cls, value):
         if value and len(value) < 3:
-            raise BusinessException("O parâmetro 'query' deve conter ao menos 3 caracteres.")
+            raise ViolationException(
+                field="query",
+                message="O parâmetro 'query' deve ter pelo menos 3 caracteres."
+            )
         return value
 
     @field_validator('order_by')
@@ -44,8 +49,8 @@ class OperatorRequestParams(BaseModel):
         allowed_columns = OperatorService.get_allowed_columns()
         if value not in allowed_columns:
             raise InvalidSortParameterException(
-                order_by=value,
-                allowed=allowed_columns
+                field="order_by",
+                message=f"O parâmetro 'order_by' deve ser um dos seguintes: {', '.join(allowed_columns)}"
             )
         return value
         
