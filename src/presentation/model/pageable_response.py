@@ -59,9 +59,9 @@ class PageableResponse(BaseModel):
             order_by=params.order_by,
             order_direction=params.order_direction
         )
-        
+    
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "data": [
                     {

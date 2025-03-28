@@ -1,7 +1,7 @@
 from typing import Optional, Literal
 from pydantic import BaseModel, Field, field_validator
-from application.exception.invalid_order_parameter_exception import InvalidOrderParameterException
-from fastapi import HTTPException, status
+from src.application.exception.business_exception import BusinessException
+from src.application.exception.invalid_sort_parameter_exception import InvalidSortParameterException
 
 class OperatorRequestParams(BaseModel):
     query: Optional[str] = Field(
@@ -32,25 +32,22 @@ class OperatorRequestParams(BaseModel):
     @field_validator('query')
     def validate_query_length(cls, value):
         if value and len(value) < 3:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Parâmetro 'query' deve ter pelo menos 3 caracteres quando fornecido."
-            )
+            raise BusinessException("O parâmetro 'query' deve conter ao menos 3 caracteres.")
         return value
 
     @field_validator('order_by')
     def validate_order_by(cls, value):
-        from application.services.operator_service import OperatorSearchService
-        allowed_columns = OperatorSearchService.get_allowed_columns()
-        if value not in OperatorSearchService.get_allowed_columns():
-            raise InvalidOrderParameterException(
+        from src.application.service.operator_service import OperatorService
+        allowed_columns = OperatorService.get_allowed_columns()
+        if value not in OperatorService.get_allowed_columns():
+            raise InvalidSortParameterException(
                 order_by=value,
                 allowed=allowed_columns
             )
         return value
         
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "query": "amil",
                 "page": 1,

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from infra.config import setup_application
-from presentation.api.routes import get_router
+from src.infra.config import setup_application
+from src.presentation.api.routes import get_router
 
 def create_application():
     # Criar a aplicação FastAPI

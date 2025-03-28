@@ -1,12 +1,11 @@
 from typing import List, Tuple
 from sqlalchemy import String, or_, func
-from domain.model.operator import Operator
-from sqlalchemy.orm import Session
-from application.dto.operator_model import OperatorModel
-from presentation.model.operator_request_params import OperatorRequestParams
+from src.domain.model.operator import Operator
+from src.application.dto.operator_model import OperatorModel
+from src.presentation.model.operator_request_params import OperatorRequestParams
 
 class OperatorRepository:
-    def __init__(self, session: Session):
+    def __init__(self, session):
         self.session = session
 
     def search_operators(self, operator_params: OperatorRequestParams) -> Tuple[List[OperatorModel], int]:
@@ -17,7 +16,6 @@ class OperatorRepository:
 
         if query:
             search_pattern = f"%{query}%"
-
             conditions = []
 
             for column in Operator.__table__.columns:
@@ -30,7 +28,7 @@ class OperatorRepository:
         last_page = db_query.with_entities(func.ceil(func.count() / page_size)).scalar()
         paginated_query = db_query.offset((page - 1) * page_size).limit(page_size)
         operators = [
-            OperatorModel.model_validate(operator)
+            OperatorModel.model_validate(operator, from_attributes=True)
             for operator in paginated_query.all()
         ]
 

@@ -2,23 +2,25 @@ from fastapi import FastAPI
 from typing import Dict, Any, List
 from src.presentation.model.pageable_response import PageableResponse
 from src.presentation.model.operator_request_params import OperatorRequestParams
-from src.presentation.model.pageable_meta_model import PageableMetaData, SortData
 from src.presentation.exception.api_error import ApiError, Violation
 from src.presentation.exception.api_error_type import ApiErrorType
 from src.application.dto.operator_model import OperatorModel
-
+import os
 
 def get_swagger_title() -> str:
     return "API de Busca de Operadores"
 
 def get_rate_limit_info() -> str:
-    return """
+    rate_limit = int(os.getenv("RATE_LIMIT", "100"))
+    rate_window = int(os.getenv("RATE_WINDOW", "60"))
+    
+    return f"""
     ## Limites de Requisição
     
     Esta API utiliza limitação de taxa para garantir a disponibilidade do serviço para todos os usuários.
     
-    * Endpoint `/api/v1/operators`: 10 requisições por minuto por endereço IP
-    * Endpoint `/api/v1/cache-test`: 5 requisições por minuto por endereço IP
+    * Endpoint `/api/v1/operators`: {rate_limit} requisições por {rate_window} segundos por endereço IP
+    * Endpoint `/api/v1/cache-test`: {rate_limit} requisições por {rate_window} segundos por endereço IP
     
     Ao atingir o limite, a API retornará o código de status HTTP 429 (Too Many Requests).
     """
@@ -33,6 +35,7 @@ def get_swagger_description() -> str:
     * Paginação de resultados
     * Ordenação customizável
     * Cache automático para melhorar performance
+    * Rate limiting com headers compatíveis com RFC 6585
     
     ## Acesso
     
@@ -72,10 +75,19 @@ def get_swagger_tags() -> List[Dict[str, str]]:
 
 def get_swagger_ui_parameters() -> Dict[str, Any]:
     return {
-        "defaultModelsExpandDepth": -1,  # Esconde a seção de modelos expandida por padrão
+        "defaultModelsExpandDepth": -1,  
         "persistAuthorization": False,   # Desabilita persistência de autenticação pois não é necessária
-        "displayRequestDuration": True,  # Mostra duração das requisições
-        "filter": True                   # Habilita filtro de busca
+        "displayRequestDuration": True, 
+        "filter": True,             
+        "syntaxHighlight": {            
+            "activate": True,
+            "theme": "monokai"
+        },
+        "docExpansion": "list",        
+        "deepLinking": True,             
+        "showExtensions": True,         
+        "showCommonExtensions": True, 
+        "tryItOutEnabled": True 
     }
 
 def get_operator_model_schema() -> Dict[str, Any]:
@@ -259,7 +271,8 @@ def get_operator_request_params_schema() -> Dict[str, Any]:
             },
             "order_by": {
                 "type": "string",
-                "description": "Campo utilizado para ordenação dos resultados. Valores válidos incluem todos os campos de texto da operadora, como 'corporate_name', 'trade_name', 'cnpj', etc."
+                "description": "Campo utilizado para ordenação dos resultados. Valores válidos incluem: corporate_name, trade_name, tax_identifier, operator_registry, city, state.",
+                "enum": ["corporate_name", "trade_name", "tax_identifier", "operator_registry", "city", "state"]
             },
             "order_direction": {
                 "type": "string",
@@ -270,57 +283,6 @@ def get_operator_request_params_schema() -> Dict[str, Any]:
         }
     }
 
-def get_sort_data_schema() -> Dict[str, Any]:
-    """
-    Retorna o esquema do SortData para uso nas definições de paginação no Swagger.
-    Este modelo representa informações de ordenação.
-    """
-    return {
-        "description": "Informações de ordenação",
-        "type": "object",
-        "properties": {
-            "sorted": {
-                "type": "boolean",
-                "description": "Indica se os resultados estão ordenados"
-            },
-            "property": {
-                "type": "string",
-                "description": "Propriedade usada para ordenação"
-            },
-            "dir": {
-                "type": "string",
-                "description": "Direção da ordenação ('asc' ou 'desc')"
-            }
-        }
-    }
-
-def get_pageable_meta_data_schema() -> Dict[str, Any]:
-    """
-    Retorna o esquema do PageableMetaData para uso nas definições de paginação no Swagger.
-    Este modelo representa metadados de paginação.
-    """
-    return {
-        "description": "Metadados de paginação",
-        "type": "object",
-        "properties": {
-            "page": {
-                "type": "integer",
-                "description": "Número da página atual"
-            },
-            "page_size": {
-                "type": "integer",
-                "description": "Quantidade de itens por página"
-            },
-            "last_page": {
-                "type": "integer",
-                "description": "Número da última página disponível"
-            },
-            "sort": {
-                "$ref": "#/components/schemas/SortData",
-                "description": "Informações de ordenação"
-            }
-        }
-    }
 
 def get_pageable_response_schema() -> Dict[str, Any]:
     """
@@ -383,71 +345,117 @@ def get_error_response_schema(status_code: int, error_type: ApiErrorType, exampl
     Returns:
         Esquema de resposta de erro formatado
     """
-    content_example = {
-        "status": status_code,
-        "type": f"https://api.intuitivecare.com.br{error_type.value}",
-        "title": error_type.title,
-        "detail": example_detail or f"Exemplo de erro do tipo {error_type.title}",
-        "timestamp": "2023-03-27T14:30:00Z"
+
+    api_error_schema = {
+        "type": "object",
+        "properties": {
+            "status": {
+                "type": "integer",
+                "description": "Código HTTP do erro",
+                "example": status_code
+            },
+            "type": {
+                "type": "string",
+                "description": "URI que identifica o tipo de erro",
+                "example": f"https://localhost:8080{error_type.value}"
+            },
+            "title": {
+                "type": "string",
+                "description": "Título curto e legível do erro",
+                "example": error_type.title
+            },
+            "detail": {
+                "type": "string",
+                "description": "Explicação detalhada do erro",
+                "example": example_detail or f"Exemplo de erro do tipo {error_type.title}"
+            },
+            "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Data e hora em que o erro ocorreu",
+                "example": "2025-03-27T14:30:00Z"
+            }
+        },
+        "required": ["status", "type", "title", "detail", "timestamp"]
     }
     
     if error_type == ApiErrorType.SYSTEM_ERROR:
-        content_example["userMessage"] = "Ocorreu um erro interno no servidor, tente novamente e se o problema persistir, entre em contato com o administrador."
+        api_error_schema["properties"]["userMessage"] = {
+            "type": "string",
+            "description": "Mensagem amigável para o usuário final",
+            "example": "Ocorreu um erro interno no servidor, tente novamente e se o problema persistir, entre em contato com o administrador."
+        }
     
     if with_violations:
-        content_example["violations"] = [
-            {"name": "campo1", "message": "deve ser preenchido"},
-            {"name": "campo2", "message": "deve ser um número válido"}
-        ]
+        api_error_schema["properties"]["violations"] = {
+            "type": "array",
+            "description": "Lista de violações específicas nos parâmetros da requisição",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Nome do campo com erro",
+                        "example": "campo1"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Mensagem de erro descrevendo a violação",
+                        "example": "deve ser preenchido"
+                    }
+                }
+            },
+            "example": [
+                {"name": "campo1", "message": "deve ser preenchido"},
+                {"name": "campo2", "message": "deve ser um número válido"}
+            ]
+        }
     
     return {
         "description": error_type.title,
         "content": {
             "application/json": {
-                "schema": {"$ref": "#/components/schemas/ApiError"},
-                "example": content_example
+                "schema": api_error_schema
             }
         }
     }
 
 def get_error_response_schema_for_rate_limit() -> Dict[str, Any]:
     """
-    Retorna o esquema da resposta para o erro de rate limit
+    Retorna o esquema de resposta de erro específico para limite de taxa excedido (429 Too Many Requests)
     """
-    return {
-        "description": "Muitas requisições (rate limit excedido)",
-        "content": {
-            "application/json": {
-                "schema": {"$ref": "#/components/schemas/ApiError"},
-                "example": {
-                    "status": 429,
-                    "type": "https://api.intuitivecare.com.br/rate-limit-excedido",
-                    "title": "Limite de Requisições Excedido",
-                    "detail": "Você excedeu o limite de 10 requisições por minuto. Tente novamente em 45 segundos.",
-                    "userMessage": "Limite de requisições excedido. Aguarde um momento antes de tentar novamente.",
-                    "timestamp": "2023-03-27T14:30:00Z"
-                }
-            }
+    rate_limit = int(os.getenv("RATE_LIMIT", "100"))
+    rate_window = int(os.getenv("RATE_WINDOW", "60"))
+    
+    example_detail = f"Taxa de requisições excedida. Limite de {rate_limit} requisições por {rate_window} segundos."
+    
+    schema = get_error_response_schema(
+        429, 
+        ApiErrorType.RATE_LIMIT_EXCEEDED, 
+        example_detail
+    )
+    
+    # Adicionar informações sobre os cabeçalhos de rate limit
+    schema["headers"] = {
+        "Retry-After": {
+            "description": "Tempo em segundos até que o limite seja resetado",
+            "schema": {"type": "integer"}
         },
-        "headers": {
-            "X-RateLimit-Limit": {
-                "description": "Número máximo de requisições permitidas no período",
-                "schema": {"type": "integer"}
-            },
-            "X-RateLimit-Remaining": {
-                "description": "Número de requisições restantes no período atual",
-                "schema": {"type": "integer"}
-            },
-            "X-RateLimit-Reset": {
-                "description": "Tempo (em segundos) até o reset do limite",
-                "schema": {"type": "integer"}
-            },
-            "Retry-After": {
-                "description": "Tempo recomendado (em segundos) para aguardar antes de tentar novamente",
-                "schema": {"type": "integer"}
-            }
+        "X-RateLimit-Limit": {
+            "description": "Número máximo de requisições permitidas por período",
+            "schema": {"type": "integer"}
+        },
+        "X-RateLimit-Remaining": {
+            "description": "Número de requisições restantes no período atual",
+            "schema": {"type": "integer"}
+        },
+        "X-RateLimit-Reset": {
+            "description": "Tempo em segundos até o reset do limite",
+            "schema": {"type": "integer"}
         }
     }
+    
+    return schema
 
 def get_common_error_responses() -> Dict[int, Dict[str, Any]]:
     """
@@ -512,11 +520,23 @@ def get_swagger_responses_for_cache_test() -> Dict[int, Dict[str, Any]]:
     return responses
 
 def get_operators_endpoint_description() -> str:
-    return """
+    rate_limit = int(os.getenv("RATE_LIMIT", "100"))
+    rate_window = int(os.getenv("RATE_WINDOW", "60"))
+    
+    return f"""
     Retorna uma lista paginada de operadoras de planos de saúde com base nos parâmetros fornecidos.
     
-    A busca pode ser realizada por texto livre que será pesquisado em diversos campos como razão social, 
-    nome fantasia, CNPJ, etc. Os resultados são retornados em formato paginado.
+    A busca pode ser realizada por texto livre que será pesquisado em diversos campos como:
+    - Razão social (corporate_name)
+    - Nome fantasia (trade_name)
+    - CNPJ (tax_identifier)
+    - Registro ANS (operator_registry)
+    - Cidade (city)
+    - Estado (state)
+    
+    Os resultados são retornados em formato paginado.
+    
+    **Observação**: Este endpoint está sujeito a limite de taxa de {rate_limit} requisições por {rate_window} segundos por endereço IP.
     """
 
 def get_cache_test_endpoint_description() -> str:
@@ -580,20 +600,48 @@ def configure_swagger(app: FastAPI) -> None:
     # Configurações adicionais da UI do Swagger
     app.swagger_ui_parameters = get_swagger_ui_parameters()
     
-    # Registro explícito dos modelos nos componentes do schema
-    app.components = {
-        "schemas": {
-            # Modelos de domínio
-            "OperatorModel": OperatorModel.model_json_schema(),
+    # Aplicar um tema personalizado
+    app.swagger_ui_oauth2_redirect_url = "/docs/oauth2-redirect"
+    app.swagger_ui_init_oauth = {
+        "usePkceWithAuthorizationCodeGrant": True
+    }
+    
+
+    def custom_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+
+        openapi_schema = app.__class__.openapi(app)
+        
+        if "components" not in openapi_schema:
+            openapi_schema["components"] = {}
             
-            # Modelos de apresentação
-            "PageableResponse": PageableResponse.model_json_schema(),
-            "PageableMetaData": PageableMetaData.model_json_schema(),
-            "SortData": SortData.model_json_schema(),
-            "OperatorRequestParams": OperatorRequestParams.model_json_schema(),
+        if "schemas" not in openapi_schema["components"]:
+            openapi_schema["components"]["schemas"] = {}
             
-            # Modelos de erro
-            "ApiError": ApiError.model_json_schema(),
-            "Violation": Violation.model_json_schema(),
+        openapi_schema["components"]["schemas"]["OperatorModel"] = OperatorModel.model_json_schema()
+        openapi_schema["components"]["schemas"]["PageableResponse"] = PageableResponse.model_json_schema()
+        openapi_schema["components"]["schemas"]["OperatorRequestParams"] = OperatorRequestParams.model_json_schema()
+        openapi_schema["components"]["schemas"]["ApiError"] = ApiError.model_json_schema()
+        openapi_schema["components"]["schemas"]["Violation"] = Violation.model_json_schema()
+        
+
+        openapi_schema["info"]["x-theme"] = {
+            "colors": {
+                "primary": "#c1c1c1",  # Cor primária (botões, links)
+                "secondary": "#0077cc", # Cor secundária
+                "success": "#32a852",   # Cor de sucesso
+                "warning": "#f0ad4e",   # Cor de aviso
+                "error": "#d9534f",     # Cor de erro
+                "background": "#ffffff" # Cor de fundo
+            },
+            "typography": {
+                "fontSize": "14px",
+                "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+            }
         }
-    } 
+        
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+    
+    app.openapi = custom_openapi 
