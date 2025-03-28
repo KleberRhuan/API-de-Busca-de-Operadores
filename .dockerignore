@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Ambiente virtual
+.venv
+.env
+venv
+env
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+
+# Arquivos de desenvolvimento
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Arquivos de log
+*.log
+
+# Diretórios e arquivos desnecessários para a imagem
+tests/
+docs/
+README.md
+*.md
+
+# Diretório de regressão gerado pelos testes
+tests/regression_snapshots/ 
