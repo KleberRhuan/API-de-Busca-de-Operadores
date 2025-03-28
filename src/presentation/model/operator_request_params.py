@@ -37,9 +37,12 @@ class OperatorRequestParams(BaseModel):
 
     @field_validator('order_by')
     def validate_order_by(cls, value):
+        if value is None:
+            return value
+            
         from src.application.service.operator_service import OperatorService
         allowed_columns = OperatorService.get_allowed_columns()
-        if value not in OperatorService.get_allowed_columns():
+        if value not in allowed_columns:
             raise InvalidSortParameterException(
                 order_by=value,
                 allowed=allowed_columns
