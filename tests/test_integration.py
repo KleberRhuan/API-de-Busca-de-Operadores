@@ -38,11 +38,14 @@ class TestOperatorsIntegration:
             # Configurar os mocks
             mock_cache_get.return_value = None  # Simular cache miss
             mock_find_all.return_value = {
-                "content": [],
+                "data": [],
                 "page": 1,
                 "page_size": 10,
-                "total_elements": 0,
-                "total_pages": 0
+                "total_items": 0,
+                "total_pages": 1,
+                "query": "",
+                "order_by": None,
+                "order_direction": "asc"
             }
             
             # Fazer a requisição para o endpoint

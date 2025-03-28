@@ -9,44 +9,47 @@ class TestOperatorsEndpoint:
         # Configurar o mock para retornar dados de exemplo
         mock_operator_service.find_all_cached.return_value = paginated_operators_response
         
-        # Fazer a requisição para o endpoint
-        response = client.get("/api/v1/operators?query=teste")
+        # Fazer a requisição para o endpoint - usando query com pelo menos 3 caracteres
+        response = client.get("/api/v1/operators?query=operadora")
         
         # Verificar se a resposta tem o status correto
         assert response.status_code == status.HTTP_200_OK
         
         # Verificar se a resposta contém os dados esperados
         data = response.json()
-        assert "content" in data
+        assert "data" in data
         assert "page" in data
         assert "page_size" in data
-        assert "total_elements" in data
+        assert "total_items" in data
         assert "total_pages" in data
-        assert len(data["content"]) == 2
+        assert len(data["data"]) == 2
         
     def test_search_operators_empty_results(self, client, mock_operator_service):
         """Teste para verificar se a busca de operadoras com resultados vazios é tratada corretamente"""
         # Configurar o mock para retornar dados vazios
         empty_response = {
-            "content": [],
+            "data": [],
             "page": 1,
             "page_size": 10,
-            "total_elements": 0,
-            "total_pages": 0
+            "total_items": 0,
+            "total_pages": 0,
+            "query": "naoexiste",
+            "order_by": None,
+            "order_direction": "asc"
         }
         mock_operator_service.find_all_cached.return_value = empty_response
         
         # Fazer a requisição para o endpoint
-        response = client.get("/api/v1/operators?query=naoexiste")
+        response = client.get("/api/v1/operators")
         
         # Verificar se a resposta tem o status correto
         assert response.status_code == status.HTTP_200_OK
         
         # Verificar se a resposta contém os dados vazios esperados
         data = response.json()
-        assert "content" in data
-        assert len(data["content"]) == 0
-        assert data["total_elements"] == 0
+        assert "data" in data
+        assert len(data["data"]) == 0
+        assert data["total_items"] == 0
         
     def test_search_operators_invalid_query(self, client):
         """Teste para verificar se a validação de query muito curta funciona"""

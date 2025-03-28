@@ -8,7 +8,7 @@ class TestFuzzing:
     """Testes de fuzzing para verificar a robustez da API contra entradas inesperadas ou maliciosas"""
     
     @pytest.mark.parametrize("param", ["query", "page", "page_size", "order_by", "order_direction"])
-    def test_parameter_fuzzing(self, client, param):
+    def test_parameter_fuzzing(self, client, param, configure_service_mocks):
         """Teste para verificar como a API lida com valores inesperados nos parâmetros"""
         # Gerar valores aleatórios e potencialmente problemáticos para testar
         fuzz_values = [
@@ -74,7 +74,7 @@ class TestFuzzing:
             except Exception as e:
                 pytest.fail(f"Exceção não tratada para valor '{value}' no parâmetro {param}: {str(e)}")
     
-    def test_long_url_fuzzing(self, client):
+    def test_long_url_fuzzing(self, client, configure_service_mocks):
         """Teste para verificar como a API lida com URLs extremamente longos"""
         # Gerar uma query string muito longa
         long_query = "query=" + "a" * 2000
@@ -89,7 +89,7 @@ class TestFuzzing:
         except Exception as e:
             pytest.fail(f"Exceção não tratada para URL muito longa: {str(e)}")
     
-    def test_special_characters_fuzzing(self, client):
+    def test_special_characters_fuzzing(self, client, configure_service_mocks):
         """Teste para verificar como a API lida com caracteres especiais nos parâmetros"""
         # Lista de caracteres especiais para testar
         special_chars = "!@#$%^&*()_+-=[]{}|;':\",./<>?\\`~"
@@ -110,7 +110,7 @@ class TestFuzzing:
             except Exception as e:
                 pytest.fail(f"Exceção não tratada para caractere especial '{char}': {str(e)}")
     
-    def test_unicode_fuzzing(self, client):
+    def test_unicode_fuzzing(self, client, configure_service_mocks):
         """Teste para verificar como a API lida com caracteres Unicode"""
         # Lista de categorias Unicode para testar
         unicode_categories = [
@@ -137,7 +137,7 @@ class TestFuzzing:
                 pytest.fail(f"Exceção não tratada para caracteres Unicode '{category_name}': {str(e)}")
     
     @pytest.mark.parametrize("method", ["post", "put", "delete", "patch", "options", "head"])
-    def test_http_method_fuzzing(self, client, method):
+    def test_http_method_fuzzing(self, client, method, configure_service_mocks):
         """Teste para verificar como a API lida com diferentes métodos HTTP"""
         # Obter o método do cliente
         client_method = getattr(client, method)
@@ -156,8 +156,9 @@ class TestFuzzing:
                 assert response.status_code in [status.HTTP_200_OK, status.HTTP_204_NO_CONTENT], \
                     f"API não retornou sucesso para método OPTIONS"
                 
-                # Verificar cabeçalhos CORS
-                assert "access-control-allow-methods" in response.headers
+                # Verificar cabeçalhos CORS apenas se retornar 200/204
+                if response.status_code in [status.HTTP_200_OK, status.HTTP_204_NO_CONTENT]:
+                    assert "access-control-allow-methods" in response.headers
                 
             # Os outros métodos devem retornar 405 Method Not Allowed
             elif method not in ["get", "head"]:

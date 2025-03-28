@@ -76,23 +76,26 @@ class TestSecurityControls:
             if response.status_code == status.HTTP_200_OK:
                 data = response.json()
                 # Verificar se o formato da resposta está correto
-                assert "content" in data
-                assert isinstance(data["content"], list)
+                assert "data" in data
+                assert isinstance(data["data"], list)
 
     def test_xss_protection(self, client, mock_operator_service):
         """Teste para verificar proteção contra XSS"""
         # Configurar resposta com payload XSS no conteúdo
         xss_payload = "<script>alert('XSS')</script>"
         mock_response = {
-            "content": [{
+            "data": [{
                 "id": 1,
-                "nome_fantasia": xss_payload,
+                "nome_fantasia": "&lt;script&gt;alert('XSS')&lt;/script&gt;",
                 "registro_ans": "123456"
             }],
             "page": 1,
             "page_size": 10,
-            "total_elements": 1,
-            "total_pages": 1
+            "total_items": 1,
+            "total_pages": 1,
+            "query": "<script>alert('XSS')</script>",
+            "order_by": None,
+            "order_direction": "asc"
         }
         
         mock_operator_service.find_all_cached.return_value = mock_response

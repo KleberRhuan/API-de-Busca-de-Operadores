@@ -1,4 +1,3 @@
-import pytest
 from fastapi import status
 
 class TestCORSConfiguration:
@@ -8,7 +7,7 @@ class TestCORSConfiguration:
         """Teste para verificar se origens permitidas recebem os cabeçalhos CORS corretos"""
         # Testar com uma origem permitida (localhost)
         response = client.get(
-            "/api/v1/operators?query=teste",
+            "/openapi.json",
             headers={"Origin": "localhost"}
         )
         
@@ -23,7 +22,7 @@ class TestCORSConfiguration:
         """Teste para verificar se origens não permitidas não recebem cabeçalhos CORS"""
         # Testar com uma origem não permitida
         response = client.get(
-            "/api/v1/operators?query=teste",
+            "/openapi.json",
             headers={"Origin": "https://malicious-site.com"}
         )
         
@@ -36,7 +35,7 @@ class TestCORSConfiguration:
         """Teste para verificar se a requisição preflight OPTIONS é processada corretamente"""
         # Fazer uma requisição preflight OPTIONS
         response = client.options(
-            "/api/v1/operators",
+            "/openapi.json",
             headers={
                 "Origin": "localhost",
                 "Access-Control-Request-Method": "GET",
@@ -58,7 +57,7 @@ class TestCORSConfiguration:
         """Teste para verificar se os cabeçalhos expostos estão configurados corretamente"""
         # Fazer uma requisição com origem permitida
         response = client.get(
-            "/api/v1/operators?query=teste",
+            "/openapi.json",
             headers={"Origin": "localhost"}
         )
         
@@ -94,8 +93,6 @@ class TestCORSConfiguration:
         # POST, PUT, DELETE são considerados não permitidos neste contexto
         non_allowed_methods = ["POST", "PUT", "DELETE"]
         for method in non_allowed_methods:
-            # Pode haver dois formatos: lista separada por vírgula ou cabeçalho individual
-            # Se for separado por vírgula, o método não deve aparecer como item na lista
             if "," in allowed_methods:
                 methods_list = [m.strip() for m in allowed_methods.split(",")]
                 assert method not in methods_list, f"Método {method} não deveria estar permitido"

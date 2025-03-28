@@ -36,11 +36,14 @@ class TestApiUsability:
         """Teste para verificar a usabilidade da paginação"""
         # Configurar uma resposta paginada
         mock_response = {
-            "content": [{"id": i, "nome_fantasia": f"Operadora {i}"} for i in range(1, 11)],
+            "data": [{"id": i, "nome_fantasia": f"Operadora {i}"} for i in range(1, 11)],
             "page": 2,
             "page_size": 10,
-            "total_elements": 25,
-            "total_pages": 3
+            "total_items": 25,
+            "total_pages": 3,
+            "query": "teste",
+            "order_by": None,
+            "order_direction": "asc"
         }
         mock_operator_service.find_all_cached.return_value = mock_response
         
@@ -54,13 +57,13 @@ class TestApiUsability:
         # Verificar elementos necessários para boa usabilidade de paginação
         assert "page" in data
         assert "page_size" in data
-        assert "total_elements" in data
+        assert "total_items" in data
         assert "total_pages" in data
         
         # Verificar valores de paginação
         assert data["page"] == 2
         assert data["page_size"] == 10
-        assert data["total_elements"] == 25
+        assert data["total_items"] == 25
         assert data["total_pages"] == 3
     
     def test_invalid_parameters_handling(self, client):

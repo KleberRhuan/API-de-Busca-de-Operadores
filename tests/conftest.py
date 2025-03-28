@@ -2,7 +2,7 @@ import os
 import sys
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 
 # Adicionar o diretório raiz ao PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -23,9 +23,26 @@ def test_app():
     return create_application()
 
 @pytest.fixture
-def client(test_app):
-    """Fornece um cliente de teste para a API"""
-    return TestClient(test_app)
+def client():
+    """Cliente de teste configurado para a aplicação FastAPI"""
+    from src.presentation.main import application
+    
+    # Desativar rate limiting para evitar falhas nos testes
+    from src.infra.middleware.rate_limit_middleware import RateLimitMiddleware
+    from starlette.middleware.base import BaseHTTPMiddleware
+    
+    # Remover o middleware de rate limit se existir
+    middlewares_to_keep = []
+    for middleware in application.user_middleware:
+        if not isinstance(middleware.cls, type) or not issubclass(middleware.cls, RateLimitMiddleware):
+            middlewares_to_keep.append(middleware)
+    
+    application.user_middleware = middlewares_to_keep
+    # Reconstruir o stack de middlewares
+    application.middleware_stack = application.build_middleware_stack()
+    
+    with TestClient(application) as test_client:
+        yield test_client
 
 @pytest.fixture
 def mock_redis():
@@ -42,12 +59,45 @@ def mock_memory_storage():
     return storage
 
 @pytest.fixture
-def mock_operator_service():
+def mock_operator_service(client):
     """Fornece um mock para o serviço de operadoras"""
-    with patch("src.application.service.operator_service.OperatorService") as mock:
-        mock_service = MagicMock()
-        mock.return_value = mock_service
-        yield mock_service
+    from src.presentation.api.routes import get_operator_service
+    
+    mock_service = AsyncMock()
+    original_dependency = client.app.dependency_overrides.get(get_operator_service, get_operator_service)
+    
+    # Substituir a dependência por um mock
+    client.app.dependency_overrides[get_operator_service] = lambda: mock_service
+    
+    yield mock_service
+    
+    # Restaurar a dependência original
+    if original_dependency == get_operator_service:
+        # Se não havia override antes, remover a entrada
+        client.app.dependency_overrides.pop(get_operator_service, None)
+    else:
+        # Se havia um override anterior, restaurá-lo
+        client.app.dependency_overrides[get_operator_service] = original_dependency
+
+@pytest.fixture
+def configure_service_mocks(mock_operator_service):
+    """Configura mocks para retornar respostas no formato correto durante os testes"""
+    def _configure_empty_response(*args, **kwargs):
+        return {
+            "data": [],
+            "page": 1,
+            "page_size": 10, 
+            "total_items": 0,
+            "total_pages": 0,
+            "query": "",
+            "order_by": None,
+            "order_direction": "asc"
+        }
+    
+    # Configura o serviço para retornar uma resposta vazia formatada corretamente
+    mock_operator_service.find_all_cached.return_value = _configure_empty_response()
+    
+    return mock_operator_service
 
 # Dados de exemplo para uso nos testes
 @pytest.fixture
@@ -55,48 +105,46 @@ def sample_operators():
     """Fornece uma lista de operadoras de exemplo para testes"""
     return [
         {
-            "id": 1,
-            "registro_ans": "123456",
+            "operator_registry": "123456",
             "cnpj": "12.345.678/0001-00",
-            "razao_social": "OPERADORA TESTE 1 LTDA",
-            "nome_fantasia": "OPERADORA TESTE 1",
-            "modalidade": "Medicina de Grupo",
-            "logradouro": "Rua Teste",
-            "numero": "123",
-            "complemento": "Sala 1",
-            "bairro": "Centro",
-            "cidade": "São Paulo",
-            "uf": "SP",
-            "cep": "01234-567",
-            "ddd": "11",
-            "telefone": "1234-5678",
+            "corporate_name": "OPERADORA TESTE 1 LTDA",
+            "trade_name": "OPERADORA TESTE 1",
+            "modality": "Medicina de Grupo",
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 1",
+            "neighborhood": "Centro",
+            "city": "São Paulo",
+            "state": "SP",
+            "zip": "01234-567",
+            "area_code": "11",
+            "phone": "1234-5678",
             "fax": "1234-5679",
             "email": "contato@operadora1.com.br",
-            "representante": "João da Silva",
-            "cargo_representante": "Diretor",
-            "data_registro_ans": "2020-01-01"
+            "representative": "João da Silva",
+            "representative_position": "Diretor",
+            "sales_region": 1
         },
         {
-            "id": 2,
-            "registro_ans": "654321",
+            "operator_registry": "654321",
             "cnpj": "98.765.432/0001-00",
-            "razao_social": "OPERADORA TESTE 2 LTDA",
-            "nome_fantasia": "OPERADORA TESTE 2",
-            "modalidade": "Cooperativa Médica",
-            "logradouro": "Av. Teste",
-            "numero": "456",
-            "complemento": None,
-            "bairro": "Jardim",
-            "cidade": "Rio de Janeiro",
-            "uf": "RJ",
-            "cep": "98765-432",
-            "ddd": "21",
-            "telefone": "9876-5432",
+            "corporate_name": "OPERADORA TESTE 2 LTDA",
+            "trade_name": "OPERADORA TESTE 2",
+            "modality": "Cooperativa Médica",
+            "street": "Av. Teste",
+            "number": "456",
+            "complement": None,
+            "neighborhood": "Jardim",
+            "city": "Rio de Janeiro",
+            "state": "RJ",
+            "zip": "98765-432",
+            "area_code": "21",
+            "phone": "9876-5432",
             "fax": None,
             "email": "contato@operadora2.com.br",
-            "representante": "Maria Souza",
-            "cargo_representante": "Presidente",
-            "data_registro_ans": "2019-05-15"
+            "representative": "Maria Souza",
+            "representative_position": "Presidente",
+            "sales_region": 2
         }
     ]
 
@@ -104,9 +152,12 @@ def sample_operators():
 def paginated_operators_response(sample_operators):
     """Fornece uma resposta paginada de operadoras para testes"""
     return {
-        "content": sample_operators,
+        "data": sample_operators,
         "page": 1,
         "page_size": 10,
-        "total_elements": 2,
-        "total_pages": 1
+        "total_items": 2,
+        "total_pages": 1,
+        "query": "operadora",
+        "order_by": None,
+        "order_direction": "asc"
     } 

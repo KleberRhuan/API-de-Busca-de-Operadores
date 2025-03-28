@@ -8,6 +8,7 @@ from src.application.exception.business_exception import BusinessException
 from src.application.exception.invalid_sort_parameter_exception import InvalidSortParameterException
 from src.application.exception.rate_limit_exception import RateLimitExceededException
 from src.presentation.exception.api_error_type import ApiErrorType
+from src.application.exception.violation_exception import ViolationException
 
 class TestExceptionHandlers:
     """Testes para verificar os manipuladores de exceção"""
@@ -37,7 +38,7 @@ class TestExceptionHandlers:
             StarletteHTTPException,
             RequestValidationError,
             BusinessException,
-            InvalidSortParameterException,
+            ViolationException,  # InvalidSortParameterException é um tipo de ViolationException
             RateLimitExceededException,
             SQLAlchemyError,
             Exception  # Handler genérico
@@ -230,3 +231,33 @@ class TestExceptionHandlers:
         
         # A mensagem de erro original não deve ser exposta ao usuário
         assert b"Erro inesperado" not in data 
+        
+    async def test_invalid_sort_parameter_exception_handler(self, mock_request):
+        """Testa o tratador de exceções para parâmetros de ordenação inválidos"""
+        from src.presentation.exception.exception_handlers import register_exception_handlers
+        
+        # Criar app mockado com handlers reais
+        app = FastAPI()
+        register_exception_handlers(app)
+        
+        # Obter o handler de exceção de parâmetro de ordenação inválido
+        handler = app.exception_handlers[InvalidSortParameterException]
+        
+        # Criar uma exceção de parâmetro de ordenação inválido
+        exception = InvalidSortParameterException(
+            field="order_by",
+            message="O campo de ordenação 'rating' não é válido"
+        )
+        
+        # Executar o handler
+        response = await handler(mock_request, exception)
+        
+        # Verificar resposta
+        assert response.status_code == 422
+        data = response.body
+        assert b"INVALID_PARAMETER" in data
+        
+        # Verificar se tem informação de violation
+        assert b"violations" in data
+        assert b"order_by" in data
+        assert b"rating" in data 

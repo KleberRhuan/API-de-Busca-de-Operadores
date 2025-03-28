@@ -54,11 +54,14 @@ class TestRegressionCases:
         """Teste para garantir que os parâmetros de paginação continuem funcionando corretamente"""
         # Configurar o mock para retornar dados paginados
         mock_response = {
-            "content": [],
+            "data": [],
             "page": 2,
             "page_size": 5,
-            "total_elements": 0,
-            "total_pages": 0
+            "total_items": 0,
+            "total_pages": 0,
+            "query": "",
+            "order_by": None,
+            "order_direction": "asc"
         }
         mock_operator_service.find_all_cached.return_value = mock_response
         
@@ -105,11 +108,14 @@ class TestRegressionCases:
             # Configurar mocks
             mock_cache_get.return_value = None  # Simular cache miss
             mock_find_all.return_value = {
-                "content": [],
+                "data": [],
                 "page": 1,
                 "page_size": 10,
-                "total_elements": 0,
-                "total_pages": 0
+                "total_items": 0,
+                "total_pages": 0,
+                "query": "",
+                "order_by": None,
+                "order_direction": "asc"
             }
             
             # Fazer primeira requisição

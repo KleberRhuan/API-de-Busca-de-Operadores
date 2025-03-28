@@ -55,17 +55,20 @@ class TestApiPerformance:
              patch("src.application.service.operator_service.OperatorService.find_all") as mock_find_all:
             
             # Dados de exemplo para retorno
-            sample_data = {
-                "content": [{"id": 1, "nome_fantasia": "Operadora Teste"}],
+            mock_response = {
+                "data": [{"id": 1, "nome_fantasia": "Operadora Teste"}],
                 "page": 1,
                 "page_size": 10,
-                "total_elements": 1,
-                "total_pages": 1
+                "total_items": 1,
+                "total_pages": 1,
+                "query": "teste",
+                "order_by": None,
+                "order_direction": "asc"
             }
             
             # Configurar primeiro acesso (cache miss)
             mock_cache_get.return_value = None
-            mock_find_all.return_value = sample_data
+            mock_find_all.return_value = mock_response
             
             # Primeiro acesso (sem cache)
             start_time_no_cache = time.time()
@@ -74,7 +77,7 @@ class TestApiPerformance:
             time_no_cache = (end_time_no_cache - start_time_no_cache) * 1000
             
             # Configurar segundo acesso (cache hit)
-            mock_cache_get.return_value = sample_data
+            mock_cache_get.return_value = mock_response
             
             # Segundo acesso (com cache)
             start_time_with_cache = time.time()
