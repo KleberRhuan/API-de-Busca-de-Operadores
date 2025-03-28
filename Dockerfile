@@ -8,9 +8,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copia os arquivos de requisitos e instala as dependências
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Instala o Poetry
+RUN pip install --no-cache-dir poetry
+
+# Copia os arquivos do Poetry e instala as dependências
+COPY pyproject.toml poetry.lock ./
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-dev --no-interaction --no-ansi
 
 # Copia o código da aplicação
 COPY . .
@@ -24,4 +28,4 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     ENVIRONMENT=production
 
 # Comando para iniciar a aplicação
-CMD ["uvicorn", "presentation.main:application", "--host", "0.0.0.0", "--port", "8080"] 
+CMD ["uvicorn", "src.presentation.main:application", "--host", "0.0.0.0", "--port", "8080"] 

@@ -25,6 +25,8 @@ Se quiser construir apenas a imagem Docker da API:
 docker build -t intuitive-care-api .
 ```
 
+A imagem usará Poetry para gerenciar as dependências do projeto.
+
 ## Executando os Contêineres Individualmente
 
 ### API
@@ -94,6 +96,18 @@ docker exec -it intuitive-care-postgres psql -U postgres -d operators_db
 
 # Terminal do Redis
 docker exec -it intuitive-care-redis redis-cli
+```
+
+### Gerenciamento de Dependências com Poetry
+
+Dentro do contêiner da API, você pode gerenciar as dependências usando Poetry:
+
+```bash
+# Adicionar uma nova dependência
+docker exec -it intuitive-care-api poetry add nome-do-pacote
+
+# Atualizar dependências
+docker exec -it intuitive-care-api poetry update
 ```
 
 ### Parar e Remover Contêineres

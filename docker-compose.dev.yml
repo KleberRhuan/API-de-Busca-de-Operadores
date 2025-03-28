@@ -17,7 +17,7 @@ services:
       - redis
     volumes:
       - ./:/app
-    command: uvicorn presentation.main:application --host 0.0.0.0 --port 8080 --reload
+    command: uvicorn src.presentation.main:application --host 0.0.0.0 --port 8080 --reload
     restart: unless-stopped
     networks:
       - app-network
