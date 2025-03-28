@@ -24,7 +24,7 @@ API de busca de operadoras de saúde desenvolvida com FastAPI, oferecendo uma in
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/kleberrhuan/intuitive-care.git
+git clone https://github.com/KleberRhuan/API-de-Busca-de-Operadores
 cd intuitive-care
 ```
 
@@ -58,10 +58,12 @@ intuitive-care/
 │   │   │   ├── invalid_sort_parameter_exception.py
 │   │   │   └── rate_limit_exception.py
 │   │   └── dto/
+│   │       └── operator_model.py
 │   ├── domain/
 │   │   ├── model/
 │   │   │   └── operator.py
 │   │   └── repository/
+│   │       └── operator_repository.py
 │   ├── infra/
 │   │   ├── config/
 │   │   │   ├── __init__.py
@@ -69,6 +71,7 @@ intuitive-care/
 │   │   │   └── swagger_config.py
 │   │   ├── database/
 │   │   │   └── __init__.py
+│   │   │   └── cache_key_manager.py
 │   │   └── middleware/
 │   │       ├── cors_middleware.py
 │   │       └── rate_limit_middleware.py
@@ -78,11 +81,11 @@ intuitive-care/
 │       ├── exception/
 │       │   ├── api_error.py
 │       │   ├── api_error_type.py
+│       │   ├── error_message_translator.py
 │       │   └── exception_handlers.py
 │       ├── model/
 │       │   ├── operator_request_params.py
-│       │   ├── pageable_response.py
-│       │   
+│       │   └── pageable_response.py
 │       └── main.py
 ├── tests/
 │   ├── conftest.py
