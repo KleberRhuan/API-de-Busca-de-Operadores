@@ -27,7 +27,7 @@ class OperatorService:
 
     def find_all(self, criteria: OperatorRequestParams) -> 'PageableResponse':
         operators, last_page = self.repository.search_operators(criteria)
-        operators_dict = [operator.dict() for operator in operators]
+        operators_dict = [operator.model_dump() for operator in operators]
         response = PageableResponse.create(operators_dict, criteria, last_page)
         return response
 
@@ -39,7 +39,12 @@ class OperatorService:
         cache=Cache.REDIS,
         key_builder=operator_key_builder
     )
-    async def find_all_cached(self, criteria: OperatorRequestParams) -> 'PageableResponse':
+    async def find_all_cached(self, criteria: OperatorRequestParams) -> dict:
         loop = asyncio.get_running_loop()
         response = await loop.run_in_executor(None, self.find_all, criteria)
+        
+        # Converter para dicionário antes de armazenar no cache
+        if isinstance(response, PageableResponse):
+            return response.model_dump()
+        
         return response
