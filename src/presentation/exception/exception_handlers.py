@@ -5,15 +5,17 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from src.presentation.exception.error_message_translator import ErrorMessageTranslator, get_translator
+from src.application.exception.violation_exception import ViolationException
+from src.presentation.exception.error_message_translator import get_translator
 from src.application.exception.business_exception import BusinessException
 from src.application.exception.rate_limit_exception import RateLimitExceededException
 from src.presentation.exception.api_error import Violation, ApiError
 from src.presentation.exception.api_error_type import ApiErrorType
+from fastapi import status
 
 def create_api_error_response(
         error_type: ApiErrorType,
-        status_code: int,
+        status_code: status,
         detail: str,
         user_message: str = None,
         violations: Optional[List[Violation]] = None
@@ -38,7 +40,6 @@ def create_api_error_response(
 @Description: Captura excecções HTTP e trata-as de forma unificada
 """
 def register_exception_handlers(app):
-
     logger = logging.getLogger("uvicorn.error")
 
     @app.exception_handler(StarletteHTTPException)
@@ -46,7 +47,7 @@ def register_exception_handlers(app):
         if exc.status_code == 404:
             return create_api_error_response(
                 error_type=ApiErrorType.RESOURCE_NOT_FOUND,
-                status_code=404,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="O recurso solicitado não foi encontrado.",
                 user_message="O recurso que você está tentando acessar não existe."
             )
@@ -54,7 +55,7 @@ def register_exception_handlers(app):
         if exc.status_code == 405:
             return create_api_error_response(
                 error_type=ApiErrorType.METHOD_NOT_ALLOWED,
-                status_code=405,
+                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
                 detail="O método HTTP usado não é permitido para este endpoint.",
                 user_message="Método não permitido. Verifique a documentação da API."
             )
@@ -76,17 +77,17 @@ def register_exception_handlers(app):
 
         return create_api_error_response(
             error_type=ApiErrorType.MESSAGE_NOT_READABLE,
-            status_code=422,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Erro de validação nos parâmetros da requisição.",
             user_message="Um ou mais parâmetros estão inválidos. Verifique e tente novamente.",
             violations=violations
         )
     
     @app.exception_handler(BusinessException)
-    async def invalid_order_parameter_handler(request: Request, exc: BusinessException):
+    async def business_exception_handler(request: Request, exc: BusinessException):
         return create_api_error_response(
             error_type=ApiErrorType.INVALID_PARAMETER,
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail= str(exc)
         )
 
@@ -96,7 +97,7 @@ def register_exception_handlers(app):
     
         return create_api_error_response(
             error_type=ApiErrorType.SYSTEM_ERROR,
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erro interno.",
             user_message="Ocorreu um erro interno no servidor, tente novamente e se o problema persistir, entre em contato com o administrador."
         )
@@ -129,3 +130,16 @@ def register_exception_handlers(app):
         response.headers["X-RateLimit-Reset"] = str(exc.reset_in)
         
         return response
+    
+    @app.exception_handler(ViolationException)
+    async def violation_exception_handler(request: Request, exc: ViolationException):
+        return create_api_error_response(
+            error_type=ApiErrorType.INVALID_PARAMETER,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+            violations=[exc.violation]
+        )
+    
+    
+    
+    
