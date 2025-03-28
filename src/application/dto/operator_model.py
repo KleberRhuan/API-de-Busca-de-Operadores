@@ -13,8 +13,8 @@ class OperatorModel(BaseModel):
     city: str
     state: str
     zip: str
-    area_code: str
-    phone: str
+    area_code: str | None = None
+    phone: str | None = None
     fax: str | None = None
     email: str
     representative: str
