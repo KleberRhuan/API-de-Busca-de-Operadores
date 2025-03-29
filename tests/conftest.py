@@ -73,10 +73,8 @@ def mock_operator_service(client):
     
     # Restaurar a dependência original
     if original_dependency == get_operator_service:
-        # Se não havia override antes, remover a entrada
         client.app.dependency_overrides.pop(get_operator_service, None)
     else:
-        # Se havia um override anterior, restaurá-lo
         client.app.dependency_overrides[get_operator_service] = original_dependency
 
 @pytest.fixture
