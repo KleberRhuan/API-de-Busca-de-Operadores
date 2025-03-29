@@ -280,8 +280,8 @@ def get_operator_request_params_schema() -> Dict[str, Any]:
             },
             "order_by": {
                 "type": "string",
-                "description": "Campo utilizado para ordenação dos resultados. Valores válidos incluem: corporate_name, trade_name, tax_identifier, operator_registry, city, state.",
-                "enum": ["corporate_name", "trade_name", "tax_identifier", "operator_registry", "city", "state"]
+                "description": "Campo utilizado para ordenação dos resultados. Valores válidos incluem: corporate_name, trade_name, cnpj, operator_registry, city, state.",
+                "enum": ["corporate_name", "trade_name", "cnpj", "operator_registry", "city", "state"]
             },
             "order_direction": {
                 "type": "string",
@@ -308,8 +308,9 @@ def get_pageable_response_schema() -> Dict[str, Any]:
                 "example": {
                     "data": [
                         {
+                            "id": 123,
                             "operator_registry": "123456",
-                            "tax_identifier": "12345678901234",
+                            "cnpj": "12345678901234",
                             "corporate_name": "Exemplo Assistência Médica S.A.",
                             "trade_name": "Exemplo Saúde",
                             "modality": "Cooperativa Médica",
@@ -323,10 +324,11 @@ def get_pageable_response_schema() -> Dict[str, Any]:
                             "area_code": "11",
                             "phone": "33333333",
                             "fax": "33333334",
-                            "email_address": "contato@exemplo.com.br",
+                            "email": "contato@exemplo.com.br",
                             "representative": "João Silva",
                             "representative_position": "Diretor",
-                            "sales_region": 1
+                            "sales_region": 1,
+                            "registration_date": "2020-01-01"
                         }
                     ],
                     "page": 1,
