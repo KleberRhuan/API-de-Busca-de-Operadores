@@ -9,7 +9,7 @@ class OperatorRequestParams(BaseModel):
     query: Optional[str] = Field(
         default="",
         max_length=100,
-        description="Texto livre para busca entre os campos da operadora. Mínimo de 3 caracteres quando fornecido."
+        description="Texto livre para busca entre os campos da operadora. Mínimo de 2 caracteres quando fornecido, permitindo busca por siglas de estados (UF)."
     )
     page: int = Field(
         default=1,
@@ -33,10 +33,10 @@ class OperatorRequestParams(BaseModel):
 
     @field_validator('query')
     def validate_query_length(cls, value):
-        if value and len(value) < 3:
+        if value and len(value) < 2:
             raise ViolationException(
                 field="query",
-                message="O parâmetro 'query' deve ter pelo menos 3 caracteres."
+                message="O parâmetro 'query' deve ter pelo menos 2 caracteres."
             )
         return value
 
@@ -57,10 +57,10 @@ class OperatorRequestParams(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "query": "amil",
+                "query": "SP",
                 "page": 1,
                 "page_size": 10,
-                "order_by": "corporate_name",
+                "order_by": "state",
                 "order_direction": "asc"
             }
         }

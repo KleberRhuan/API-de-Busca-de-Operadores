@@ -267,7 +267,7 @@ def get_operator_request_params_schema() -> Dict[str, Any]:
         "properties": {
             "query": {
                 "type": "string",
-                "description": "Texto livre para busca entre os campos da operadora. Mínimo de 3 caracteres quando fornecido.",
+                "description": "Texto livre para busca entre os campos da operadora. Mínimo de 2 caracteres quando fornecido, permitindo busca por siglas de estados (UF).",
                 "maxLength": 100
             },
             "page": {
@@ -411,18 +411,18 @@ def get_error_response_schema(status_code: int, error_type: ApiErrorType, exampl
                     "name": {
                         "type": "string",
                         "description": "Nome do campo com erro",
-                        "example": "campo1"
+                        "example": "query"
                     },
                     "message": {
                         "type": "string",
                         "description": "Mensagem de erro descrevendo a violação",
-                        "example": "deve ser preenchido"
+                        "example": "O parâmetro 'query' deve ter pelo menos 2 caracteres."
                     }
                 }
             },
             "example": [
-                {"name": "campo1", "message": "deve ser preenchido"},
-                {"name": "campo2", "message": "deve ser um número válido"}
+                {"name": "query", "message": "O parâmetro 'query' deve ter pelo menos 2 caracteres."},
+                {"name": "page", "message": "deve ser um número maior que zero"}
             ]
         }
     
@@ -547,7 +547,7 @@ def get_operators_endpoint_description() -> str:
     - CNPJ (cnpj)
     - Registro ANS (operator_registry)
     - Cidade (city)
-    - Estado (state)
+    - Estado (state) - É possível buscar por siglas de estados brasileiros com 2 caracteres, como "SP", "RJ", "MG", etc.
     
     Os resultados podem ser ordenados pelos campos acima e também por:
     - Data de registro (registration_date)
@@ -564,7 +564,7 @@ def get_operators_endpoint_docstring() -> str:
     return """
     Busca operadoras de planos de saúde.
     
-    - **query**: Texto para busca em diversos campos (razão social, nome fantasia, etc)
+    - **query**: Texto para busca em diversos campos (mínimo 2 caracteres)
     - **page**: Número da página (começando em 1)
     - **page_size**: Quantidade de itens por página (entre 1 e 100)
     - **order_by**: Campo para ordenação dos resultados
