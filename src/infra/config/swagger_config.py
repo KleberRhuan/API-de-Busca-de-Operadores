@@ -108,7 +108,7 @@ def get_operator_model_schema() -> Dict[str, Any]:
         "description": "Operadora de plano de saúde",
         "type": "object",
         "properties": {
-            "operator_registry": {
+            "operatorRegistry": {
                 "type": "string",
                 "description": "Registro ANS da operadora"
             },
@@ -116,11 +116,11 @@ def get_operator_model_schema() -> Dict[str, Any]:
                 "type": "string",
                 "description": "CNPJ da operadora"
             },
-            "corporate_name": {
+            "corporateName": {
                 "type": "string",
                 "description": "Razão social da operadora"
             },
-            "trade_name": {
+            "tradeName": {
                 "type": "string",
                 "description": "Nome fantasia da operadora"
             },
@@ -156,7 +156,7 @@ def get_operator_model_schema() -> Dict[str, Any]:
                 "type": "string",
                 "description": "CEP do endereço"
             },
-            "area_code": {
+            "areaCode": {
                 "type": "string",
                 "description": "Código de área do telefone"
             },
@@ -176,15 +176,15 @@ def get_operator_model_schema() -> Dict[str, Any]:
                 "type": "string",
                 "description": "Nome do representante legal"
             },
-            "representative_position": {
+            "representativePosition": {
                 "type": "string",
                 "description": "Cargo do representante legal"
             },
-            "sales_region": {
+            "salesRegion": {
                 "type": "integer",
                 "description": "Região de vendas"
             },
-            "registration_date": {
+            "registrationDate": {
                 "type": "string",
                 "format": "date",
                 "description": "Data de registro na ANS"
@@ -265,7 +265,7 @@ def get_operator_request_params_schema() -> Dict[str, Any]:
         "description": "Parâmetros para busca de operadoras",
         "type": "object",
         "properties": {
-            "query": {
+            "search": {
                 "type": "string",
                 "description": "Texto livre para busca entre os campos da operadora. Mínimo de 2 caracteres quando fornecido, permitindo busca por siglas de estados (UF).",
                 "maxLength": 100
@@ -276,19 +276,19 @@ def get_operator_request_params_schema() -> Dict[str, Any]:
                 "minimum": 1,
                 "default": 1
             },
-            "page_size": {
+            "pageSize": {
                 "type": "integer",
                 "description": "Quantidade de resultados por página (entre 1 e 100). Valores recomendados: 10, 20, 50, 100.",
                 "minimum": 1,
                 "maximum": 100,
                 "default": 10
             },
-            "order_by": {
+            "sortField": {
                 "type": "string",
-                "description": "Campo utilizado para ordenação dos resultados. Valores válidos incluem: corporate_name, trade_name, cnpj, operator_registry, city, state, registration_date.",
-                "enum": ["corporate_name", "trade_name", "cnpj", "operator_registry", "city", "state", "registration_date"]
+                "description": "Campo utilizado para ordenação dos resultados. Valores válidos incluem: corporateName, tradeName, cnpj, operatorRegistry, city, state, registrationDate.",
+                "enum": ["corporateName", "tradeName", "cnpj", "operatorRegistry", "city", "state", "registrationDate"]
             },
-            "order_direction": {
+            "sortDirection": {
                 "type": "string",
                 "enum": ["asc", "desc"],
                 "description": "Direção da ordenação: 'asc' (ascendente, A-Z, 0-9) ou 'desc' (descendente, Z-A, 9-0).",
@@ -313,10 +313,10 @@ def get_pageable_response_schema() -> Dict[str, Any]:
                 "example": {
                     "data": [
                         {
-                            "operator_registry": "123456",
+                            "operatorRegistry": "123456",
                             "cnpj": "12345678901234",
-                            "corporate_name": "Exemplo Assistência Médica S.A.",
-                            "trade_name": "Exemplo Saúde",
+                            "corporateName": "Exemplo Assistência Médica S.A.",
+                            "tradeName": "Exemplo Saúde",
                             "modality": "Cooperativa Médica",
                             "street": "Avenida Brasil",
                             "number": "1000",
@@ -325,23 +325,23 @@ def get_pageable_response_schema() -> Dict[str, Any]:
                             "city": "São Paulo",
                             "state": "SP",
                             "zip": "01234567",
-                            "area_code": "11",
+                            "areaCode": "11",
                             "phone": "33333333",
                             "fax": "33333334",
                             "email": "contato@exemplo.com.br",
                             "representative": "João Silva",
-                            "representative_position": "Diretor",
-                            "sales_region": 1,
-                            "registration_date": "2020-01-01"
+                            "representativePosition": "Diretor",
+                            "salesRegion": 1,
+                            "registrationDate": "2020-01-01"
                         }
                     ],
                     "page": 1,
-                    "page_size": 10,
-                    "total_pages": 1,
-                    "total_items": 1,
-                    "query": "exemplo",
-                    "order_by": "corporate_name",
-                    "order_direction": "asc"
+                    "pageSize": 10,
+                    "totalPages": 1,
+                    "totalItems": 1,
+                    "search": "exemplo",
+                    "sortField": "corporateName",
+                    "sortDirection": "asc"
                 }
             }
         }
@@ -411,17 +411,17 @@ def get_error_response_schema(status_code: int, error_type: ApiErrorType, exampl
                     "name": {
                         "type": "string",
                         "description": "Nome do campo com erro",
-                        "example": "query"
+                        "example": "search"
                     },
                     "message": {
                         "type": "string",
                         "description": "Mensagem de erro descrevendo a violação",
-                        "example": "O parâmetro 'query' deve ter pelo menos 2 caracteres."
+                        "example": "O parâmetro 'search' deve ter pelo menos 2 caracteres."
                     }
                 }
             },
             "example": [
-                {"name": "query", "message": "O parâmetro 'query' deve ter pelo menos 2 caracteres."},
+                {"name": "search", "message": "O parâmetro 'search' deve ter pelo menos 2 caracteres."},
                 {"name": "page", "message": "deve ser um número maior que zero"}
             ]
         }
@@ -480,7 +480,7 @@ def get_common_error_responses() -> Dict[int, Dict[str, Any]]:
         400: get_error_response_schema(
             400, 
             ApiErrorType.INVALID_PARAMETER, 
-            "Parâmetro de ordenação inválido. Valores permitidos: corporate_name, trade_name, cnpj"
+            "Parâmetro de ordenação inválido. Valores permitidos: corporateName, tradeName, cnpj"
         ),
         404: get_error_response_schema(
             404, 
@@ -542,15 +542,15 @@ def get_operators_endpoint_description() -> str:
     Retorna uma lista paginada de operadoras de planos de saúde com base nos parâmetros fornecidos.
     
     A busca pode ser realizada por texto livre que será pesquisado em diversos campos como:
-    - Razão social (corporate_name)
-    - Nome fantasia (trade_name)
+    - Razão social (corporateName)
+    - Nome fantasia (tradeName)
     - CNPJ (cnpj)
-    - Registro ANS (operator_registry)
+    - Registro ANS (operatorRegistry)
     - Cidade (city)
     - Estado (state) - É possível buscar por siglas de estados brasileiros com 2 caracteres, como "SP", "RJ", "MG", etc.
     
     Os resultados podem ser ordenados pelos campos acima e também por:
-    - Data de registro (registration_date)
+    - Data de registro (registrationDate)
     
     Os resultados são retornados em formato paginado.
     
@@ -564,11 +564,11 @@ def get_operators_endpoint_docstring() -> str:
     return """
     Busca operadoras de planos de saúde.
     
-    - **query**: Texto para busca em diversos campos (mínimo 2 caracteres)
+    - **search**: Texto para busca em diversos campos (mínimo 2 caracteres)
     - **page**: Número da página (começando em 1)
-    - **page_size**: Quantidade de itens por página (entre 1 e 100)
-    - **order_by**: Campo para ordenação dos resultados
-    - **order_direction**: Direção da ordenação ("asc" ou "desc")
+    - **pageSize**: Quantidade de itens por página (entre 1 e 100)
+    - **sortField**: Campo para ordenação dos resultados
+    - **sortDirection**: Direção da ordenação ("asc" ou "desc")
     """
 
 def get_cache_test_endpoint_docstring() -> str:
