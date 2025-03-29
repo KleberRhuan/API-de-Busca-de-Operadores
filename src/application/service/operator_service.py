@@ -2,7 +2,7 @@ from typing import FrozenSet
 from functools import lru_cache
 import asyncio
 from aiocache import cached, Cache
-from sqlalchemy import String
+from sqlalchemy import String, Date
 from src.domain.model.operator import Operator
 from src.domain.repository.operator_repository import OperatorRepository
 from src.infra.database.cache_key_manager import operator_key_builder
@@ -11,7 +11,8 @@ from src.presentation.model.pageable_response import PageableResponse
 
 def get_allowed_order_columns(model) -> frozenset[str]:
     return frozenset(
-        col.name for col in model.__table__.columns if isinstance(col.type, String)
+        col.name for col in model.__table__.columns 
+        if isinstance(col.type, (String, Date))
     )
 
 class OperatorService:
@@ -21,7 +22,7 @@ class OperatorService:
         self.repository = OperatorRepository(session)
 
     @classmethod
-    @lru_cache(maxsize=1)
+    @lru_cache(maxsize=32)  
     def get_allowed_columns(cls) -> frozenset[str]:
         return cls._ALLOWED_ORDER_COLUMNS
 

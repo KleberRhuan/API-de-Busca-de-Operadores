@@ -112,7 +112,7 @@ def get_operator_model_schema() -> Dict[str, Any]:
                 "type": "string",
                 "description": "Registro ANS da operadora"
             },
-            "tax_identifier": {
+            "cnpj": {
                 "type": "string",
                 "description": "CNPJ da operadora"
             },
@@ -168,7 +168,7 @@ def get_operator_model_schema() -> Dict[str, Any]:
                 "type": "string",
                 "description": "Número de fax"
             },
-            "email_address": {
+            "email": {
                 "type": "string",
                 "description": "Endereço de e-mail"
             },
@@ -183,6 +183,11 @@ def get_operator_model_schema() -> Dict[str, Any]:
             "sales_region": {
                 "type": "integer",
                 "description": "Região de vendas"
+            },
+            "registration_date": {
+                "type": "string",
+                "format": "date",
+                "description": "Data de registro na ANS"
             }
         }
     }
@@ -280,8 +285,8 @@ def get_operator_request_params_schema() -> Dict[str, Any]:
             },
             "order_by": {
                 "type": "string",
-                "description": "Campo utilizado para ordenação dos resultados. Valores válidos incluem: corporate_name, trade_name, cnpj, operator_registry, city, state.",
-                "enum": ["corporate_name", "trade_name", "cnpj", "operator_registry", "city", "state"]
+                "description": "Campo utilizado para ordenação dos resultados. Valores válidos incluem: corporate_name, trade_name, cnpj, operator_registry, city, state, registration_date.",
+                "enum": ["corporate_name", "trade_name", "cnpj", "operator_registry", "city", "state", "registration_date"]
             },
             "order_direction": {
                 "type": "string",
@@ -308,7 +313,6 @@ def get_pageable_response_schema() -> Dict[str, Any]:
                 "example": {
                     "data": [
                         {
-                            "id": 123,
                             "operator_registry": "123456",
                             "cnpj": "12345678901234",
                             "corporate_name": "Exemplo Assistência Médica S.A.",
@@ -540,10 +544,13 @@ def get_operators_endpoint_description() -> str:
     A busca pode ser realizada por texto livre que será pesquisado em diversos campos como:
     - Razão social (corporate_name)
     - Nome fantasia (trade_name)
-    - CNPJ (tax_identifier)
+    - CNPJ (cnpj)
     - Registro ANS (operator_registry)
     - Cidade (city)
     - Estado (state)
+    
+    Os resultados podem ser ordenados pelos campos acima e também por:
+    - Data de registro (registration_date)
     
     Os resultados são retornados em formato paginado.
     
