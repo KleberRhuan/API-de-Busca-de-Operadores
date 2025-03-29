@@ -1,5 +1,7 @@
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
+from pydantic.alias_generators import to_camel
+
 
 class PageableResponse(BaseModel):
     """
@@ -24,13 +26,13 @@ class PageableResponse(BaseModel):
     total_items: int = Field(
         description="Número total de operadoras encontradas para a consulta."
     )
-    query: str = Field(
+    search: str = Field(
         description="Texto de busca utilizado na consulta. String vazia se nenhuma busca textual foi realizada."
     )
-    order_by: Optional[str] = Field(
+    sort_field: Optional[str] = Field(
         description="Campo utilizado para ordenação dos resultados. Null se nenhuma ordenação específica foi solicitada."
     )
-    order_direction: str = Field(
+    sort_direction: str = Field(
         description="Direção da ordenação ('asc' ou 'desc')."
     )
 
@@ -55,13 +57,16 @@ class PageableResponse(BaseModel):
             page_size=params.page_size,
             total_pages=last_page,
             total_items=total_items,
-            query=params.query,
-            order_by=params.order_by,
-            order_direction=params.order_direction
+            search=params.search,
+            sort_field=params.sort_field,
+            sort_direction=params.sort_direction
         )
-    
-    class Config:
-        json_schema_extra = {
+
+    model_config = {
+        "from_attributes": True,
+        "alias_generator": to_camel,
+        "populate_by_name": True,
+        "json_schema_extra": {
             "example": {
                 "data": [
                     {
@@ -85,8 +90,9 @@ class PageableResponse(BaseModel):
                 "page_size": 10,
                 "total_pages": 1,
                 "total_items": 1,
-                "query": "amil",
-                "order_by": "corporate_name",
-                "order_direction": "asc"
+                "search": "amil",
+                "sort_field": "corporate_name",
+                "sort_direction": "asc"
             }
         }
+    }

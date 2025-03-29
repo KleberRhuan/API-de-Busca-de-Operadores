@@ -10,13 +10,23 @@ from src.presentation.model.operator_request_params import OperatorRequestParams
 from src.presentation.model.pageable_response import PageableResponse
 
 def get_allowed_order_columns(model) -> frozenset[str]:
-    return frozenset(
-        col.name for col in model.__table__.columns 
-        if isinstance(col.type, (String, Date))
-    )
+    """
+    Retorna os nomes das propriedades do modelo (em inglês) para colunas do tipo String ou Date.
+    Ao invés de usar col.name (que retorna o nome da coluna no banco), usa o mapeamento
+    entre propriedades Python e colunas do banco.
+    """
+    column_mappings = {}
+    for attr_name, attr_value in model.__dict__.items():
+        if hasattr(attr_value, 'property') and hasattr(attr_value.property, 'columns'):
+            column = attr_value.property.columns[0]
+            if isinstance(column.type, (String, Date)):
+                column_mappings[attr_name] = column
+    
+    return frozenset(column_mappings.keys())
 
 class OperatorService:
     _ALLOWED_ORDER_COLUMNS: FrozenSet[str] = get_allowed_order_columns(Operator)
+    print(f"Allowed order columns: {_ALLOWED_ORDER_COLUMNS}")
 
     def __init__(self, session):
         self.repository = OperatorRepository(session)

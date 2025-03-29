@@ -1,4 +1,7 @@
-from pydantic import BaseModel, Field
+from datetime import date
+from pydantic import BaseModel, Field, field_serializer
+from pydantic.alias_generators import to_camel
+
 
 class OperatorModel(BaseModel):
     operator_registry: str
@@ -20,6 +23,14 @@ class OperatorModel(BaseModel):
     representative: str
     representative_position: str
     sales_region: int | None = None
-    
-    class Config:
-        from_attributes = True
+    registration_date: date
+
+    @field_serializer('registration_date')
+    def serialize_date(self, dt: date) -> str:
+        return dt.isoformat() if dt else None
+
+    model_config = {
+        "from_attributes": True,
+        "alias_generator": to_camel,
+        "populate_by_name": True
+    }
