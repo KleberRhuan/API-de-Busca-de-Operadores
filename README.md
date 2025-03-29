@@ -152,11 +152,11 @@ poetry run pytest tests/test_functional.py
 Busca operadoras de saúde com filtros e paginação.
 
 **Parâmetros:**
-- `query`: Texto para busca (mínimo 3 caracteres)
+- `search`: Texto para busca (mínimo 3 caracteres)
 - `page`: Número da página (default: 1)
-- `page_size`: Itens por página (default: 10, max: 100)
-- `order_by`: Campo para ordenação
-- `order_direction`: Direção da ordenação (asc/desc)
+- `pageSize`: Itens por página (default: 10, max: 100)
+- `sortField`: Campo para ordenação
+- `sortDirection`: Direção da ordenação (asc/desc)
 
 **Exemplo de resposta:**
 ```json
@@ -164,17 +164,18 @@ Busca operadoras de saúde com filtros e paginação.
     "data": [
         {
             "id": 1,
-            "corporate_name": "Nome da Operadora",
-            "trade_name": "Nome Fantasia",
+            "corporateName": "Nome da Operadora",
+            "tradeName": "Nome Fantasia",
             "cnpj": "12345678901234"
         }
     ],
-    "meta": {
-        "total": 100,
-        "page": 1,
-        "page_size": 10,
-        "total_pages": 10
-    }
+    "page": 1,
+    "pageSize": 10,
+    "totalPages": 10,
+    "totalItems": 100,
+    "search": "",
+    "sortField": null,
+    "sortDirection": "asc"
 }
 ```
 
