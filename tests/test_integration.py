@@ -11,7 +11,7 @@ class TestOperatorsIntegration:
         mock_operator_service.find_all_cached.return_value = paginated_operators_response
         
         # Fazer a requisição para o endpoint
-        response = client.get("/api/v1/operators?query=teste&page=1&page_size=10")
+        response = client.get("/api/v1/operators?search=teste&page=1&page_size=10")
         
         # Verificar se a resposta tem o status correto
         assert response.status_code == status.HTTP_200_OK
@@ -25,7 +25,7 @@ class TestOperatorsIntegration:
         params = args[0]
         
         # Verificar se os parâmetros estão corretos
-        assert params.query == "teste"
+        assert params.search == "teste"
         assert params.page == 1
         assert params.page_size == 10
         
@@ -43,13 +43,13 @@ class TestOperatorsIntegration:
                 "page_size": 10,
                 "total_items": 0,
                 "total_pages": 1,
-                "query": "",
-                "order_by": None,
-                "order_direction": "asc"
+                "search": "",
+                "sort_field": None,
+                "sort_direction": "asc"
             }
             
             # Fazer a requisição para o endpoint
-            response = client.get("/api/v1/operators?query=teste")
+            response = client.get("/api/v1/operators?search=teste")
             
             # Verificar se a resposta tem o status correto
             assert response.status_code == status.HTTP_200_OK
@@ -69,7 +69,7 @@ class TestMiddlewareIntegration:
     def test_cors_headers(self, client):
         """Teste para verificar se os cabeçalhos CORS estão sendo aplicados corretamente"""
         # Fazer a requisição com cabeçalho Origin definido
-        response = client.get("/api/v1/operators?query=teste", headers={"Origin": "localhost"})
+        response = client.get("/api/v1/operators?search=teste", headers={"Origin": "localhost"})
         
         # Verificar se a resposta tem os cabeçalhos CORS esperados
         assert "access-control-allow-origin" in response.headers
@@ -81,7 +81,7 @@ class TestMiddlewareIntegration:
         mock_operator_service.find_all_cached.return_value = paginated_operators_response
         
         # Fazer a requisição para o endpoint
-        response = client.get("/api/v1/operators?query=teste")
+        response = client.get("/api/v1/operators?search=teste")
         
         # Verificar se a resposta tem os cabeçalhos de rate limit
         assert "x-ratelimit-limit" in response.headers

@@ -5,10 +5,10 @@ import json
 class TestRegressionCases:
     """Testes de regressão para garantir que problemas corrigidos não voltem a ocorrer"""
     
-    def test_short_query_validation(self, client):
+    def test_short_search_validation(self, client):
         """Teste para garantir que a validação de consultas curtas continue funcionando"""
         # Verificar se queries curtas são rejeitadas corretamente
-        response = client.get("/api/v1/operators?query=ab")
+        response = client.get("/api/v1/operators?search=ab")
         
         # Verificar se a resposta tem o status correto
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -16,15 +16,15 @@ class TestRegressionCases:
         # Verificar a mensagem de erro
         data = response.json()
         assert "violations" in data
-        assert any("query" in violation["name"] for violation in data["violations"])
+        assert any("search" in violation["name"] for violation in data["violations"])
         
         # Verificar se a mensagem contém a indicação do tamanho mínimo
-        query_violation = next(v for v in data["violations"] if "query" in v["name"])
-        assert any(word in query_violation["message"].lower() for word in ["mínimo", "minimum", "3"])
+        search_violation = next(v for v in data["violations"] if "search" in v["name"])
+        assert any(word in search_violation["message"].lower() for word in ["mínimo", "minimum", "3"])
     
     def test_rate_limit_headers_present(self, client):
         """Teste para garantir que os cabeçalhos de rate limit continuem sendo retornados"""
-        response = client.get("/api/v1/operators?query=teste")
+        response = client.get("/api/v1/operators?search=teste")
         
         # Verificar se a resposta tem os cabeçalhos de rate limit
         assert "x-ratelimit-limit" in response.headers
@@ -34,7 +34,7 @@ class TestRegressionCases:
     def test_cors_headers_consistency(self, client):
         """Teste para garantir que os cabeçalhos CORS continuem consistentes"""
         # Verificar se os cabeçalhos CORS são retornados para origem permitida
-        response = client.get("/api/v1/operators?query=teste", headers={"Origin": "localhost"})
+        response = client.get("/api/v1/operators?search=teste", headers={"Origin": "localhost"})
         
         # Verificar cabeçalhos CORS
         assert "access-control-allow-origin" in response.headers
@@ -59,14 +59,14 @@ class TestRegressionCases:
             "page_size": 5,
             "total_items": 0,
             "total_pages": 0,
-            "query": "",
-            "order_by": None,
-            "order_direction": "asc"
+            "search": "",
+            "sort_field": None,
+            "sort_direction": "asc"
         }
         mock_operator_service.find_all_cached.return_value = mock_response
         
         # Testar com parâmetros de paginação personalizados
-        response = client.get("/api/v1/operators?query=teste&page=2&page_size=5")
+        response = client.get("/api/v1/operators?search=teste&page=2&page_size=5")
         
         # Verificar se a resposta tem o status correto
         assert response.status_code == status.HTTP_200_OK
@@ -99,7 +99,7 @@ class TestRegressionCases:
         assert data["status"] == 404
         assert data["type"] == "https://httpstatuses.io/404"
     
-    def test_query_cache_key_generation(self, client):
+    def test_search_cache_key_generation(self, client):
         """Teste para garantir que consultas idênticas usem o mesmo cache (regressão de cache)"""
         with pytest.mock.patch("src.infra.database.cache.get") as mock_cache_get, \
              pytest.mock.patch("src.infra.database.cache.set") as mock_cache_set, \
@@ -113,13 +113,13 @@ class TestRegressionCases:
                 "page_size": 10,
                 "total_items": 0,
                 "total_pages": 0,
-                "query": "",
-                "order_by": None,
-                "order_direction": "asc"
+                "search": "",
+                "sort_field": None,
+                "sort_direction": "asc"
             }
             
             # Fazer primeira requisição
-            client.get("/api/v1/operators?query=teste&page=1&page_size=10")
+            client.get("/api/v1/operators?search=teste&page=1&page_size=10")
             
             # Capturar a chave de cache usada
             cache_key_1 = mock_cache_set.call_args[0][0]
@@ -130,7 +130,7 @@ class TestRegressionCases:
             mock_find_all.reset_mock()
             
             # Fazer segunda requisição idêntica mas com parâmetros em ordem diferente
-            client.get("/api/v1/operators?page=1&query=teste&page_size=10")
+            client.get("/api/v1/operators?page=1&search=teste&page_size=10")
             
             # Verificar se a chave de cache é a mesma
             cache_key_2 = mock_cache_get.call_args[0][0]

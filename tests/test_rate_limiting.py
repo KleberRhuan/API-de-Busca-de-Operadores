@@ -23,15 +23,15 @@ class TestRateLimiting:
         mock_response.page_size = 10
         mock_response.total_pages = 0
         mock_response.total_items = 0
-        mock_response.query = "teste"
-        mock_response.order_by = None
-        mock_response.order_direction = "asc"
+        mock_response.search = "teste"
+        mock_response.sort_field = None
+        mock_response.sort_direction = "asc"
         
         # Configurar o mock do serviço
         mock_operator_service.find_all_cached.return_value = mock_response
         
         # Fazer a requisição usando um endpoint que não faz validações complexas
-        response = client.get("/api/v1/operators?query=teste")
+        response = client.get("/api/v1/operators?search=teste")
         
         # Verificar se a resposta tem os cabeçalhos de rate limit
         assert "x-ratelimit-limit" in response.headers, "Cabeçalho X-RateLimit-Limit ausente"

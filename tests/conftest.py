@@ -87,9 +87,9 @@ def configure_service_mocks(mock_operator_service):
             "page_size": 10, 
             "total_items": 0,
             "total_pages": 0,
-            "query": "",
-            "order_by": None,
-            "order_direction": "asc"
+            "search": "",
+            "sort_field": None,
+            "sort_direction": "asc"
         }
     
     # Configura o serviço para retornar uma resposta vazia formatada corretamente
@@ -155,7 +155,7 @@ def paginated_operators_response(sample_operators):
         "page_size": 10,
         "total_items": 2,
         "total_pages": 1,
-        "query": "operadora",
-        "order_by": None,
-        "order_direction": "asc"
+        "search": "operadora",
+        "sort_field": None,
+        "sort_direction": "asc"
     } 

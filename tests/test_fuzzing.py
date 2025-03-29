@@ -7,7 +7,7 @@ from fastapi import status
 class TestFuzzing:
     """Testes de fuzzing para verificar a robustez da API contra entradas inesperadas ou maliciosas"""
     
-    @pytest.mark.parametrize("param", ["query", "page", "page_size", "order_by", "order_direction"])
+    @pytest.mark.parametrize("param", ["search", "page", "page_size", "sort_field", "sort_direction"])
     def test_parameter_fuzzing(self, client, param, configure_service_mocks):
         """Teste para verificar como a API lida com valores inesperados nos parâmetros"""
         # Gerar valores aleatórios e potencialmente problemáticos para testar
@@ -49,7 +49,7 @@ class TestFuzzing:
         
         for value in fuzz_values:
             # Criar parâmetros para a URL
-            params = {"query": "teste"}  # Valor padrão para garantir requisição válida
+            params = {"search": "teste"}  # Valor padrão para garantir requisição válida
             
             if value is not None:
                 params[param] = value
@@ -76,12 +76,12 @@ class TestFuzzing:
     
     def test_long_url_fuzzing(self, client, configure_service_mocks):
         """Teste para verificar como a API lida com URLs extremamente longos"""
-        # Gerar uma query string muito longa
-        long_query = "query=" + "a" * 2000
+        # Gerar uma search string muito longa
+        long_search = "search=" + "a" * 2000
         
         # Fazer a requisição
         try:
-            response = client.get(f"/api/v1/operators?{long_query}")
+            response = client.get(f"/api/v1/operators?{long_search}")
             
             # A API não deve retornar erro 500 (erro não tratado)
             assert response.status_code != status.HTTP_500_INTERNAL_SERVER_ERROR, \
@@ -97,12 +97,11 @@ class TestFuzzing:
         for char in special_chars:
             # Codificar o caractere para a URL
             encoded_char = urllib.parse.quote(char)
-            query = f"teste{char}123"
-            encoded_query = f"teste{encoded_char}123"
+            encoded_search = f"teste{encoded_char}123"
             
             # Fazer a requisição
             try:
-                response = client.get(f"/api/v1/operators?query={encoded_query}")
+                response = client.get(f"/api/v1/operators?search={encoded_search}")
                 
                 # A API não deve retornar erro 500 (erro não tratado)
                 assert response.status_code != status.HTTP_500_INTERNAL_SERVER_ERROR, \
@@ -128,7 +127,7 @@ class TestFuzzing:
             
             # Fazer a requisição
             try:
-                response = client.get(f"/api/v1/operators?query=teste{encoded_chars}")
+                response = client.get(f"/api/v1/operators?search=teste{encoded_chars}")
                 
                 # A API não deve retornar erro 500 (erro não tratado)
                 assert response.status_code != status.HTTP_500_INTERNAL_SERVER_ERROR, \

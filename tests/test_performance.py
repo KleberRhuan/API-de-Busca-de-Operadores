@@ -19,7 +19,7 @@ class TestApiPerformance:
         # Executar múltiplas requisições e medir o tempo
         for _ in range(num_requests):
             start_time = time.time()
-            response = client.get("/api/v1/operators?query=teste")
+            response = client.get("/api/v1/operators?search=teste")
             end_time = time.time()
             
             # Verificar se a resposta tem o status correto
@@ -61,9 +61,9 @@ class TestApiPerformance:
                 "page_size": 10,
                 "total_items": 1,
                 "total_pages": 1,
-                "query": "teste",
-                "order_by": None,
-                "order_direction": "asc"
+                "search": "teste",
+                "sort_field": None,
+                "sort_direction": "asc"
             }
             
             # Configurar primeiro acesso (cache miss)
@@ -72,7 +72,7 @@ class TestApiPerformance:
             
             # Primeiro acesso (sem cache)
             start_time_no_cache = time.time()
-            response_no_cache = client.get("/api/v1/operators?query=teste")
+            response_no_cache = client.get("/api/v1/operators?search=teste")
             end_time_no_cache = time.time()
             time_no_cache = (end_time_no_cache - start_time_no_cache) * 1000
             
@@ -81,7 +81,7 @@ class TestApiPerformance:
             
             # Segundo acesso (com cache)
             start_time_with_cache = time.time()
-            response_with_cache = client.get("/api/v1/operators?query=teste")
+            response_with_cache = client.get("/api/v1/operators?search=teste")
             end_time_with_cache = time.time()
             time_with_cache = (end_time_with_cache - start_time_with_cache) * 1000
             
@@ -130,7 +130,7 @@ class TestApiPerformance:
             for _ in range(num_requests_per_thread):
                 try:
                     start_time = time.time()
-                    response = client.get("/api/v1/operators?query=teste")
+                    response = client.get("/api/v1/operators?search=teste")
                     end_time = time.time()
                     
                     if response.status_code == 200:

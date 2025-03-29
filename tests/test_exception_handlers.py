@@ -245,7 +245,7 @@ class TestExceptionHandlers:
         
         # Criar uma exceção de parâmetro de ordenação inválido
         exception = InvalidSortParameterException(
-            field="order_by",
+            field="sort_field",
             message="O campo de ordenação 'rating' não é válido"
         )
         
@@ -259,5 +259,5 @@ class TestExceptionHandlers:
         
         # Verificar se tem informação de violation
         assert b"violations" in data
-        assert b"order_by" in data
+        assert b"sort_field" in data
         assert b"rating" in data 

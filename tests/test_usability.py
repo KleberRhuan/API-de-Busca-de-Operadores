@@ -7,8 +7,8 @@ class TestApiUsability:
     
     def test_error_messages_clarity(self, client):
         """Teste para verificar a clareza das mensagens de erro"""
-        # Testar erro de validação (query muito curta)
-        response = client.get("/api/v1/operators?query=ab")
+        # Testar erro de validação (search muito curta)
+        response = client.get("/api/v1/operators?search=ab")
         
         # Verificar se a resposta tem o status de erro de validação
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -41,14 +41,14 @@ class TestApiUsability:
             "page_size": 10,
             "total_items": 25,
             "total_pages": 3,
-            "query": "teste",
-            "order_by": None,
-            "order_direction": "asc"
+            "search": "teste",
+            "sort_field": None,
+            "sort_direction": "asc"
         }
         mock_operator_service.find_all_cached.return_value = mock_response
         
         # Fazer a requisição para a página 2
-        response = client.get("/api/v1/operators?query=teste&page=2&page_size=10")
+        response = client.get("/api/v1/operators?search=teste&page=2&page_size=10")
         
         # Verificar a resposta
         assert response.status_code == status.HTTP_200_OK
@@ -71,23 +71,23 @@ class TestApiUsability:
         # Testar vários cenários de parâmetros inválidos
         invalid_params = [
             # Página negativa
-            {"query": "teste", "page": -1},
+            {"search": "teste", "page": -1},
             # Tamanho de página zero
-            {"query": "teste", "page_size": 0},
+            {"search": "teste", "page_size": 0},
             # Tamanho de página maior que o permitido
-            {"query": "teste", "page_size": 1000},
+            {"search": "teste", "page_size": 1000},
             # Parâmetro de ordenação inválido
-            {"query": "teste", "order_by": "campo_inexistente"},
+            {"search": "teste", "sort_field": "campo_inexistente"},
             # Direção de ordenação inválida
-            {"query": "teste", "order_direction": "invalid"}
+            {"search": "teste", "sort_direction": "invalid"}
         ]
         
         for params in invalid_params:
-            # Construir a string de query
-            query_string = "&".join([f"{key}={value}" for key, value in params.items()])
+            # Construir a string de search
+            search_string = "&".join([f"{key}={value}" for key, value in params.items()])
             
             # Fazer a requisição
-            response = client.get(f"/api/v1/operators?{query_string}")
+            response = client.get(f"/api/v1/operators?{search_string}")
             
             # Verificar se a resposta é um erro de validação
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY, \
@@ -104,7 +104,7 @@ class TestApiUsability:
         error_scenarios = [
             # Erro de validação
             {
-                "request": lambda c: c.get("/api/v1/operators?query=ab"),
+                "request": lambda c: c.get("/api/v1/operators?search=ab"),
                 "expected_status": status.HTTP_422_UNPROCESSABLE_ENTITY
             },
             # Recurso não encontrado

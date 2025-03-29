@@ -17,7 +17,7 @@ class TestSecurityControls:
         
         # Executar as requisições
         for i in range(num_requests):
-            response = client.get(f"/api/v1/operators?query=teste&cache_buster={i}")
+            response = client.get(f"/api/v1/operators?search=teste&cache_buster={i}")
             
             if i < 10:  # As primeiras 10 requisições devem ser bem-sucedidas
                 assert response.status_code == status.HTTP_200_OK, f"Requisição {i+1} falhou com status {response.status_code}"
@@ -41,7 +41,7 @@ class TestSecurityControls:
         
         # Tentar acessar a API com um origem não permitida
         response = client.get(
-            "/api/v1/operators?query=teste",
+            "/api/v1/operators?search=teste",
             headers={"Origin": "https://malicious-site.com"}
         )
         
@@ -65,8 +65,8 @@ class TestSecurityControls:
         
         # Testar cada payload
         for payload in sql_injection_payloads:
-            # Tentar usar o payload na query
-            response = client.get(f"/api/v1/operators?query={payload}")
+            # Tentar usar o payload no search
+            response = client.get(f"/api/v1/operators?search={payload}")
             
             # A aplicação não deve retornar erro de servidor (500) para tentativas de injeção SQL
             assert response.status_code != status.HTTP_500_INTERNAL_SERVER_ERROR, \
@@ -93,15 +93,15 @@ class TestSecurityControls:
             "page_size": 10,
             "total_items": 1,
             "total_pages": 1,
-            "query": "<script>alert('XSS')</script>",
-            "order_by": None,
-            "order_direction": "asc"
+            "search": "<script>alert('XSS')</script>",
+            "sort_field": None,
+            "sort_direction": "asc"
         }
         
         mock_operator_service.find_all_cached.return_value = mock_response
         
         # Fazer uma requisição
-        response = client.get("/api/v1/operators?query=teste")
+        response = client.get("/api/v1/operators?search=teste")
         
         # Verificar se a resposta tem o status correto
         assert response.status_code == status.HTTP_200_OK
@@ -114,7 +114,7 @@ class TestSecurityControls:
 
     def test_security_headers(self, client):
         """Teste para verificar cabeçalhos de segurança HTTP"""
-        response = client.get("/api/v1/operators?query=teste")
+        response = client.get("/api/v1/operators?search=teste")
         
         # Lista de cabeçalhos de segurança desejáveis
         # Comentado os que ainda não foram implementados

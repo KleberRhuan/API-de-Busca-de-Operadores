@@ -9,8 +9,8 @@ class TestOperatorsEndpoint:
         # Configurar o mock para retornar dados de exemplo
         mock_operator_service.find_all_cached.return_value = paginated_operators_response
         
-        # Fazer a requisição para o endpoint - usando query com pelo menos 3 caracteres
-        response = client.get("/api/v1/operators?query=operadora")
+        # Fazer a requisição para o endpoint - usando search com pelo menos 3 caracteres
+        response = client.get("/api/v1/operators?search=operadora")
         
         # Verificar se a resposta tem o status correto
         assert response.status_code == status.HTTP_200_OK
@@ -30,12 +30,12 @@ class TestOperatorsEndpoint:
         empty_response = {
             "data": [],
             "page": 1,
-            "page_size": 10,
-            "total_items": 0,
-            "total_pages": 0,
-            "query": "naoexiste",
-            "order_by": None,
-            "order_direction": "asc"
+            "pageSize": 10,
+            "totalItems": 0,
+            "totalPages": 0,
+            "search": "naoexiste",
+            "sortField": None,
+            "sortDirection": "asc"
         }
         mock_operator_service.find_all_cached.return_value = empty_response
         
@@ -51,10 +51,10 @@ class TestOperatorsEndpoint:
         assert len(data["data"]) == 0
         assert data["total_items"] == 0
         
-    def test_search_operators_invalid_query(self, client):
-        """Teste para verificar se a validação de query muito curta funciona"""
-        # Fazer a requisição para o endpoint com uma query muito curta
-        response = client.get("/api/v1/operators?query=ab")
+    def test_search_operators_invalid_search(self, client):
+        """Teste para verificar se a validação de search muito curta funciona"""
+        # Fazer a requisição para o endpoint com uma search muito curta
+        response = client.get("/api/v1/operators?search=ab")
         
         # Verificar se a resposta tem o status de erro de validação
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -62,7 +62,7 @@ class TestOperatorsEndpoint:
         # Verificar se a mensagem de erro está correta
         data = response.json()
         assert "violations" in data
-        assert any("query" in violation["name"] for violation in data["violations"])
+        assert any("search" in violation["name"] for violation in data["violations"])
 
 class TestApplicationHealth:
     """Testes para verificar a saúde da aplicação"""

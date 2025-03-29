@@ -34,11 +34,11 @@ class TestAPIConformity:
             "page_size": 10,
             "total_items": 0,
             "total_pages": 0,
-            "query": "teste",
-            "order_by": None,
-            "order_direction": "asc"
+            "search": "teste",
+            "sort_field": None,
+            "sort_direction": "asc"
         }
-        response = client.get("/api/v1/operators?query=teste")
+        response = client.get("/api/v1/operators?search=teste")
         assert response.status_code == status.HTTP_200_OK
         
         # 2. Não encontrado (404)
@@ -46,7 +46,7 @@ class TestAPIConformity:
         assert response.status_code == status.HTTP_404_NOT_FOUND
         
         # 3. Erro de validação (422)
-        response = client.get("/api/v1/operators?query=ab")
+        response = client.get("/api/v1/operators?search=ab")
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         
         # 4. Método não permitido (405)
