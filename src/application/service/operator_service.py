@@ -28,7 +28,7 @@ class OperatorService:
 
     def find_all(self, criteria: OperatorRequestParams) -> 'PageableResponse':
         operators, last_page = self.repository.search_operators(criteria)
-        operators_dict = [operator.model_dump() for operator in operators]
+        operators_dict = [operator.model_dump(by_alias=True) for operator in operators]
         response = PageableResponse.create(operators_dict, criteria, last_page)
         return response
 
