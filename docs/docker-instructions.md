@@ -17,15 +17,54 @@ docker-compose up -d
 
 A API estará disponível em: http://localhost:8080/docs
 
-## Construindo a Imagem Docker
+## Construindo a Imagem
 
-Se quiser construir apenas a imagem Docker da API:
+Para construir a imagem Docker localmente:
 
 ```bash
-docker build -t intuitive-care-api .
+docker build -t intuitive-care-backend .
 ```
 
-A imagem usará Poetry para gerenciar as dependências do projeto.
+A imagem usa o nome `intuitive-care-backend` por padrão, como definido nas labels do Dockerfile.
+
+### Argumentos de Build
+
+O Dockerfile aceita os seguintes argumentos de build:
+
+- `ENVIRONMENT`: Ambiente de execução (default: `production`)
+- `APP_PORT`: Porta da aplicação (default: `8080`)
+
+Exemplo com argumentos personalizados:
+
+```bash
+docker build -t intuitive-care-backend \
+  --build-arg ENVIRONMENT=staging \
+  --build-arg APP_PORT=3000 \
+  .
+```
+
+## Executando com Docker Compose
+
+### Ambiente de Desenvolvimento
+
+Para iniciar o ambiente de desenvolvimento completo:
+
+```bash
+docker-compose -f docker-compose.yml up -d
+```
+
+Isso iniciará:
+- API em modo de recarga automática (`intuitive-care-backend-dev`)
+- PostgreSQL (`intuitive-care-postgres-dev`)
+- Redis (`intuitive-care-redis-dev`)
+
+### Ambiente de Produção
+
+Para o ambiente de produção:
+
+```bash
+docker-compose up -d
+```
 
 ## Executando os Contêineres Individualmente
 
@@ -135,7 +174,7 @@ A aplicação suporta as seguintes variáveis de ambiente que podem ser configur
 Para desenvolvimento, você pode montar o diretório local como um volume:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.yml -f docker-compose.yml up -d
 ```
 
 Isso permitirá que você edite os arquivos localmente e as alterações serão refletidas imediatamente no contêiner.

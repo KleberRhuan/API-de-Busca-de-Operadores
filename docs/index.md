@@ -11,6 +11,7 @@ Bem-vindo à documentação da API de Busca de Operadoras. Esta documentação f
 ### Guias de Configuração
 - [Configuração CORS](cors-configuration.md) - Detalhes sobre a implementação CORS na API
 - [Instruções Docker](docker-instructions.md) - Como usar o Docker com este projeto
+- [Convenção camelCase](camelCase-convention.md) - Detalhes sobre o formato de resposta JSON adotado
 
 ### Referências Técnicas
 - [README do Projeto](../README.md) - Visão geral do projeto, instalação e uso
@@ -37,6 +38,15 @@ A API implementa:
 
 - `GET /api/v1/operators` - Busca operadoras com suporte a filtros e paginação
 - Para mais detalhes, consulte a [documentação Swagger](/docs)
+
+### Formato de Resposta JSON - camelCase
+
+A API utiliza o formato camelCase para todas as propriedades JSON nas respostas. Por exemplo:
+- `operatorRegistry` em vez de `operator_registry`
+- `corporateName` em vez de `corporate_name`
+- `representativePosition` em vez de `representative_position`
+
+Esta convenção facilita a integração com clientes frontend que utilizam JavaScript/TypeScript onde camelCase é a convenção padrão.
 
 ## Contribuindo com a Documentação
 

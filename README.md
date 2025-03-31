@@ -51,7 +51,7 @@ Para executar o projeto usando Docker:
 
 ```bash
 # Desenvolvimento
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.yml up -d
 
 # Produção
 docker-compose up -d
@@ -266,3 +266,13 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 - SQLAlchemy
 - Pydantic
 - E todos os outros projetos open source utilizados
+
+## Formato de Resposta JSON
+
+A API retorna os dados no formato JSON com as seguintes características:
+
+* **Nomenclatura**: Todos os campos utilizam a convenção camelCase (ex: `corporateName`, `registrationDate`)
+* **Datas**: Formatadas como ISO 8601 (YYYY-MM-DD)
+* **Paginação**: Resultados paginados incluem metadados como `page`, `pageSize`, `totalItems`, etc.
+
+Para mais detalhes sobre a convenção camelCase, consulte a [documentação](docs/camelCase-convention.md).
