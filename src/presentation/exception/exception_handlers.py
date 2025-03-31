@@ -13,6 +13,8 @@ from src.presentation.exception.api_error import Violation, ApiError
 from src.presentation.exception.api_error_type import ApiErrorType
 from fastapi import status
 
+
+logger = logging.getLogger("uvicorn.error")
 def create_api_error_response(
         error_type: ApiErrorType,
         status_code: status,
@@ -20,6 +22,7 @@ def create_api_error_response(
         user_message: str = None,
         violations: Optional[List[Violation]] = None
 ) -> JSONResponse:
+    logger.error(f"{error_type.title}: {detail}, {user_message}, {violations}")
 
     api_error = ApiError(
         status=status_code,
@@ -40,7 +43,7 @@ def create_api_error_response(
 @Description: Captura excecções HTTP e trata-as de forma unificada
 """
 def register_exception_handlers(app):
-    logger = logging.getLogger("uvicorn.error")
+
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException):
