@@ -17,9 +17,10 @@ def setup_cors(app: FastAPI) -> FastAPI:
     Retorna:
         A instância do FastAPI configurada com o middleware CORS
     """
+    allow_origins = os.getenv('CORS_ORIGIN', 'http://localhost:5173').split(',')
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[os.getenv('CORS_ORIGIN', 'http://localhost:5173')],
+        allow_origins=allow_origins,
         allow_credentials=False,
         allow_methods=["GET", "OPTIONS"],
         allow_headers=["Accept", "Content-Type"],
