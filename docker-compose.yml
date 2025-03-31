@@ -1,29 +1,50 @@
-version: '3.8'
+name: Kleber-Rhuan-Intuitive-Care-Test
 
 services:
+  # Backend
   api:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    container_name: intuitive-care-api
+    image: kleberrhuan/intuitive-care-backend:1.0.0
+    container_name: intuitive-care-backend-dev
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "source .venv/bin/activate && uvicorn src.presentation.main:application --host 0.0.0.0 --port 8080 --reload",
+      ]
     ports:
       - "8080:8080"
+    volumes:
+      - ./src:/app/src
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/operators_db
-      - REDIS_URL=redis://redis:6379/0
-      - ENVIRONMENT=production
+      CORS_ORIGIN: "http://localhost:5173,http://localhost:3000,http://localhost:4173"
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/operators_db"
+      ENVIRONMENT: "dev"
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+    restart: unless-stopped
     depends_on:
       - postgres
       - redis
-    volumes:
-      - ./:/app
-    restart: unless-stopped
     networks:
       - app-network
 
+  # Frontend
+  frontend:
+    image: kleberrhuan/intuitive-care-frontend:latest
+    container_name: intuitive-care-frontend
+    ports:
+      - "4173:80"
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+  # Postgres
   postgres:
-    image: postgres:15-alpine
-    container_name: intuitive-care-postgres
+    image: kleberrhuan/intuitive-care-postgresdb:latest
+    container_name: intuitive-care-postgres-db
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
@@ -36,21 +57,22 @@ services:
     networks:
       - app-network
 
+  # Redis
   redis:
-    image: redis:7-alpine
-    container_name: intuitive-care-redis
+    image: redis:latest
+    container_name: intuitive-care-redis-db
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - "redis_data:/data"
     restart: unless-stopped
     networks:
       - app-network
-
 networks:
   app-network:
-    driver: bridge
+    name: intuitive-care-network
+    external: true
 
 volumes:
   postgres_data:
-  redis_data: 
+  redis_data:
