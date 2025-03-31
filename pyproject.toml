@@ -14,11 +14,14 @@ dependencies = [
     "redis (>=5.2.1,<6.0.0)",
     "limits (>=4.4.1,<5.0.0)",
     "pydantic (>=2.11.0,<3.0.0)",
-    "python-dotenv (>=1.1.0,<2.0.0)"
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "aiocache (>=0.12.3,<0.13.0)",
+    "starlette (>=0.46.1,<0.47.0)",
+    "psycopg2-binary (>=2.9.10,<3.0.0)"
 ]
 
 [tool.poetry]
-package-mode = false
+package-mode = true
 packages = [{include = "src"}]
 
 [tool.poetry.group.dev.dependencies]
@@ -31,11 +34,11 @@ isort = "^6.0.1"
 flake8 = "^7.1.2"
 
 [tool.poetry.scripts]
-start = "uvicorn src.presentation.main:application --reload"
-test = "pytest"
-format = "black ."
-sort = "isort ."
-lint = "flake8 ."
+start = "src.scripts.run:start"
+test = "src.scripts.run:test"
+format = "src.scripts.run:format"
+sort = "src.scripts.run:sort"
+lint = "src.scripts.run:lint"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
