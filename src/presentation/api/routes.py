@@ -14,7 +14,7 @@ api_router = APIRouter(prefix="/api/v1")
 def get_operator_service(db=Depends(get_db)):
     return OperatorService(db)
 
-@api_router.get("/api/v1/health")
+@api_router.get("/health")
 def health():
     return {"status": "ok"}
 

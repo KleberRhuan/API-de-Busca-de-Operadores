@@ -579,6 +579,23 @@ ENDPOINT_CONFIG = {
         "responses": get_swagger_responses_for_cache_test(),
         "docstring": get_cache_test_endpoint_docstring(),
     },
+    "health": {
+        "tag": "Health",
+        "summary": "Health Check",
+        "description": "Endpoint that returns the health status of the API.",
+        "response_description": "Health status response",
+        "responses": {
+            200: {
+                "description": "API is healthy",
+                "content": {
+                    "application/json": {
+                        "example": {"status": "ok"}
+                    }
+                }
+            }
+        },
+        "docstring": "Health check endpoint"
+    },
 }
 
 
@@ -650,3 +667,4 @@ def configure_swagger(app: FastAPI) -> None:
         return app.openapi_schema
 
     app.openapi = custom_openapi
+
