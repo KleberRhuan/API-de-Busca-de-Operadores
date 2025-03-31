@@ -24,10 +24,16 @@ class OperatorRepository:
 
     @staticmethod
     def apply_ordering(query, field: Optional[str], direction: str = 'asc'):
-        if not field or not hasattr(Operator, field):
+        if not field:
             return query
 
-        column = getattr(Operator, field)
+        if hasattr(Operator, field):
+            column = getattr(Operator, field)
+        else:
+            column = Operator.__table__.columns.get(field)
+            if column is None:
+                return query
+    
         order_func = desc if direction == 'desc' else asc
         return query.order_by(order_func(column))
 
