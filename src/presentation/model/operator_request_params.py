@@ -28,6 +28,7 @@ class OperatorRequestParams(BaseModel):
     sort_direction: Literal["asc", "desc"] = Field(
         default="asc",
         description="Direção da ordenação: 'asc' (ascendente, A-Z, 0-9) ou 'desc' (descendente, Z-A, 9-0)."
+    
     )
 
     @field_validator('search')

@@ -13,7 +13,7 @@ def get_operator_service(db=Depends(get_db)):
     return OperatorService(db)
 
 @api_router.get(
-    "/operators", 
+    "/operators",
     response_model=SWAGGER_CONFIG["operators"]["response_model"],
     tags=[SWAGGER_CONFIG["operators"]["tag"]],
     summary=SWAGGER_CONFIG["operators"]["summary"],

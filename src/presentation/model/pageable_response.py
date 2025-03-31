@@ -2,7 +2,6 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from pydantic.alias_generators import to_camel
 
-
 class PageableResponse(BaseModel):
     """
     Resposta paginada da API de busca de operadoras.
@@ -38,17 +37,6 @@ class PageableResponse(BaseModel):
 
     @classmethod
     def create(cls, operators: List[Dict[str, Any]], params, last_page: int) -> 'PageableResponse':
-        """
-        Cria uma resposta paginada a partir dos dados dos operadores e parâmetros de consulta.
-        
-        Args:
-            operators: Lista de dicionários contendo os dados das operadoras
-            params: Parâmetros da requisição
-            last_page: Número total de páginas
-            
-        Returns:
-            Uma instância de PageableResponse configurada com os dados fornecidos
-        """
         total_items = (last_page - 1) * params.page_size + len(operators) if operators else 0
         
         return cls(
