@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_serializer
 from pydantic.alias_generators import to_camel
 
+
 class OperatorModel(BaseModel):
     operator_registry: Optional[str]
     cnpj: Optional[str] = Field(..., description="Número do CNPJ da operadora")
@@ -25,13 +26,13 @@ class OperatorModel(BaseModel):
     representative_position: Optional[str]
     sales_region: Optional[int]
     registration_date: date = Field(..., alias="registrationDate")
-    
-    @field_serializer('registration_date')
+
+    @field_serializer("registration_date")
     def serialize_date(self, dt: date) -> str:
         return dt.isoformat() if dt else None
 
     model_config = {
         "from_attributes": True,
         "alias_generator": to_camel,
-        "populate_by_name": True
+        "populate_by_name": True,
     }

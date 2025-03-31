@@ -1,4 +1,6 @@
-from src.presentation.model.operator_request_params import OperatorRequestParams
+from src.presentation.model.operator_request_params import \
+    OperatorRequestParams
+
 
 def operator_key_builder(func, *args, **kwargs):
     """
@@ -11,16 +13,18 @@ def operator_key_builder(func, *args, **kwargs):
 
     if len(args) < 2:
         raise ValueError("Erro ao gerar key do cache: argumentos insuficientes.")
-    
+
     criteria = args[1]
 
     if not isinstance(criteria, OperatorRequestParams):
-        raise ValueError("Erro ao gerar key do cache: o parâmetro 'criteria' deve ser do tipo OperatorRequestParams.")
-    
+        raise ValueError(
+            "Erro ao gerar key do cache: o parâmetro 'criteria' deve ser do tipo OperatorRequestParams."
+        )
+
     try:
         criteria_json = criteria.model_dump_json()
     except AttributeError:
         # Fallback para versões anteriores do Pydantic
         criteria_json = criteria.json()
-        
+
     return f"operator_search:{criteria_json}"
