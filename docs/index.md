@@ -4,10 +4,6 @@ Bem-vindo à documentação da API de Busca de Operadoras. Esta documentação f
 
 ## Documentos Disponíveis
 
-### Guias de Uso
-- [Documentação da API (Swagger)](/docs) - Interface interativa para testar a API
-- [Documentação da API (ReDoc)](/redoc) - Documentação alternativa em formato mais legível
-
 ### Guias de Configuração
 - [Configuração CORS](cors-configuration.md) - Detalhes sobre a implementação CORS na API
 - [Instruções Docker](docker-instructions.md) - Como usar o Docker com este projeto
@@ -37,7 +33,7 @@ A API implementa:
 ### Endpoints Disponíveis
 
 - `GET /api/v1/operators` - Busca operadoras com suporte a filtros e paginação
-- Para mais detalhes, consulte a [documentação Swagger](/docs)
+- Para mais detalhes, acesse o rota de docs na api.
 
 ### Formato de Resposta JSON - camelCase
 
